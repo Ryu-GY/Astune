@@ -13,7 +13,7 @@ class PreviewRequest(BaseModel):
     longitude: float | None = Field(default=None, ge=-180, le=180)
     timezone: str | None = None
     dst_fold: int | None = Field(default=None, ge=0, le=1)
-    max_magnitude: float = Field(default=2.0, ge=-2, le=8)
+    max_magnitude: float = Field(default=2.0, ge=-2, le=5.5)
 
     @model_validator(mode="after")
     def validate_location_fields(self) -> "PreviewRequest":

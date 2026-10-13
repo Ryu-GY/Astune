@@ -60,6 +60,12 @@ test("invalid dates, offsets, coordinates and timezones are rejected", () => {
   }
 });
 
+test("preview magnitude cannot exceed the shipped Hipparcos coverage", () => {
+  assert.equal(normalizePreviewInput({ ...input, maxMagnitude: 5.5 }).maxMagnitude, 5.5);
+  assert.throws(() => normalizePreviewInput({ ...input, maxMagnitude: 5.6 }));
+  assert.throws(() => normalizePreviewInput({ ...input, maxMagnitude: -2.1 }));
+});
+
 test("core client maps snake_case and preserves upstream errors", async () => {
   const legacy = normalizePreviewInput(input);
   let sent: Record<string, unknown> = {};

@@ -9,7 +9,7 @@ export const previewReadingInputSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   locationName: z.string().trim().max(120).optional(),
-  maxMagnitude: z.number().min(-2).max(8).optional().default(2),
+  maxMagnitude: z.number().min(-2).max(5.5).optional().default(2),
   dstFold: z.union([z.literal(0), z.literal(1)]).optional()
 });
 

@@ -34,7 +34,10 @@ API 문서는 <http://127.0.0.1:8000/docs>에서 확인합니다.
 ## 데이터와 오류
 
 - `.env`와 상대 데이터 경로는 이 backend 디렉터리를 기준으로 해석합니다.
-- 별 목록 기본 경로: `../data/astro/bright-stars.json` (31개 샘플). 기존 camelCase와 코어의 snake_case 형식을 모두 읽습니다.
+- 별 목록 기본 경로: `../data/astro/bright-stars.json` (Hipparcos Vmag ≤ 5.5, 2,848개). 기존 camelCase와 코어의 snake_case 형식을 모두 읽습니다.
+- 같은 디렉터리의 `bright-stars.meta.json`이 필요합니다. 내용 해시·행 수·지원 등급 범위를 검증하며, 출처·버전은 이 파일에서 읽습니다. 누락·불일치는 503입니다.
+- `max_magnitude`는 -2~5.5 범위이며 기본값은 2.0입니다. 기준 시점 J1991.25, 고유운동, 유효한 시차를 반영합니다.
+- 재생성: `uv run python -m app.astro.build_bright_catalog --download` (원본이 없을 때만 다운로드). 이후 `--download` 없이 재생성할 수 있습니다. 카탈로그 교체 후 서버를 재시작하세요.
 - 천체력 기본 경로: `data/astro/de421.bsp`. 준비 명령에서 한 번 내려받고 계산 중에는 네트워크를 사용하지 않습니다.
 - `dst_fold`가 필요한 중복 현지시각, 존재하지 않는 현지시각, 천체력 범위 밖 날짜, 후보 별 없음은 422 응답입니다.
 - 누락되거나 잘못된 계산 데이터는 503 응답입니다.

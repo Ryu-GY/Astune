@@ -13,6 +13,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "backend:sync": "uv sync --project astune-backend",
     "backend:data": "uv run --directory astune-backend python -m app.astro.prepare_data",
+    "backend:catalog": "uv run --directory astune-backend python -m app.astro.build_bright_catalog",
     "backend:dev": "uv run --directory astune-backend uvicorn app.main:app --host 127.0.0.1 --port 8000",
     "backend:test": "uv run --directory astune-backend pytest"
   },

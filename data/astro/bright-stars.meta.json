@@ -1,0 +1,42 @@
+{
+  "catalogVersion": "hipparcos-i239-vmag5.5-v1",
+  "sourceLabel": "ESA Hipparcos (1997), I/239, Vmag <= 5.5",
+  "sourceUrl": "https://cdsarc.cds.unistra.fr/ftp/cats/I/239/hip_main.dat",
+  "sourceReference": "ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200; CDS I/239/hip_main",
+  "sourceSha256": "58ceabb104d647160d9437ce6e513a02a036bb4ad9f8879a5a22fd52943616e0",
+  "catalogSha256": "0338cb5e06c5361857bdce985a54f27be9e606ec6545f65bdad550db712b9985",
+  "nameAliasesSha256": "83e9882be8bcb240496159bcaf0653d73d4ca3e568f1b7d229660e5b5a9977c9",
+  "recordCount": 2848,
+  "maxMagnitude": 5.5,
+  "coordinateFrame": "ICRS",
+  "epochYear": 1991.25,
+  "properMotionUnits": "mas/year; RA includes cos(dec)",
+  "parallaxUnits": "mas; missing or non-positive values use zero (unknown distance)",
+  "radialVelocity": "not supplied by this catalog; Skyfield default 0 km/s",
+  "constellations": "Skyfield bundled boundaries, evaluated at catalog ICRS position",
+  "displayNames": "Existing Astune display aliases; otherwise HIP identifier. Not a complete IAU name list.",
+  "generatorSkyfieldVersion": "1.55",
+  "quality": {
+    "sourceRows": 118218,
+    "missingMagnitudeRows": 1,
+    "brightRowsBeforePositionFilter": 2851,
+    "excludedMissingPositionHipIds": [
+      55203,
+      78727,
+      115125
+    ],
+    "zeroMotionFallbackHipIds": [],
+    "zeroParallaxFallbackHipIds": [
+      12086,
+      26220,
+      26221,
+      37677,
+      45085,
+      51192,
+      82671,
+      89439,
+      105186,
+      113561
+    ]
+  }
+}

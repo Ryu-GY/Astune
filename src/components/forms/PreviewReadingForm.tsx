@@ -167,12 +167,14 @@ export function PreviewReadingForm() {
             className="input"
             id="maxMagnitude"
             type="number"
+            min="-2"
+            max="5.5"
             step="0.1"
             value={body.maxMagnitude}
             onChange={(event) => update("maxMagnitude", event.target.value)}
           />
           <p className="help">
-            값이 낮을수록 더 밝은 별만 사용합니다. 기본 2.0이면 샘플 데이터에서 주요 밝은 별만 계산합니다.
+            값이 낮을수록 더 밝은 별만 사용합니다. 기본값은 2.0이며, 최대 5.5등급까지 계산할 수 있습니다.
           </p>
         </div>
 

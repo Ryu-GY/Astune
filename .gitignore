@@ -38,6 +38,7 @@ htmlcov/
 *.sqlite3-*
 *.bsp
 *.bsp.download
+astune-backend/data/astro/hip_main.dat
 *.log
 .audit-tmp/
 

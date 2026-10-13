@@ -32,10 +32,6 @@ class Settings(BaseSettings):
         alias="CITY_DATA_PATH",
     )
     astro_ephemeris_path: str = Field(default="data/astro/de421.bsp", alias="ASTRO_EPHEMERIS_PATH")
-    astro_catalog_version: str = Field(default="hip-bright-starter-v1", alias="ASTRO_CATALOG_VERSION")
-    astro_source_label: str = Field(
-        default="ESA Hipparcos bright subset (31-star starter sample)", alias="ASTRO_SOURCE_LABEL"
-    )
     default_timezone: str = Field(default="Asia/Seoul", alias="DEFAULT_TIMEZONE")
     database_url: str = Field(
         default="postgresql://user:password@localhost:5432/astune",

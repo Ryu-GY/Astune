@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from app.astro.catalog import load_catalog_metadata
 from app.astro.engine import AstronomyEngine, EngineConfig
 from app.astro.schemas import BirthMomentInput
 from app.astro.time_utils import resolve_local_datetime
@@ -11,11 +12,12 @@ from app.services.location_service import resolve_location
 @lru_cache(maxsize=1)
 def get_astronomy_engine() -> AstronomyEngine:
     settings = get_settings()
+    metadata = load_catalog_metadata(str(settings.astro_catalog_abspath))
     return AstronomyEngine(EngineConfig(
         catalog_path=settings.astro_catalog_abspath,
         ephemeris_path=settings.astro_ephemeris_abspath,
-        source_label=settings.astro_source_label,
-        catalog_version=settings.astro_catalog_version,
+        source_label=metadata["sourceLabel"],
+        catalog_version=metadata["catalogVersion"],
     ))
 
 

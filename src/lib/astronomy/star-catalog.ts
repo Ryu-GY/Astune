@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { CatalogStar } from "@/lib/astronomy/types";
+import catalogMetadata from "../../../data/astro/bright-stars.meta.json";
 
 let cachedCatalog: CatalogStar[] | null = null;
 
-export const ASTRO_SOURCE_LABEL = "ESA Hipparcos bright subset (starter sample)";
-export const ASTRO_CATALOG_VERSION = "hip-bright-starter-v1";
+export const ASTRO_SOURCE_LABEL = catalogMetadata.sourceLabel;
+export const ASTRO_CATALOG_VERSION = catalogMetadata.catalogVersion;
 export const ASTRO_ENGINE_NAME = "local-horizontal-transform-v1";
 
 function loadCatalog(): CatalogStar[] {

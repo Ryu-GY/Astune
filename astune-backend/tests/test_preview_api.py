@@ -46,6 +46,7 @@ def test_real_skyfield_preview():
     {**BASE, "latitude": 91, "longitude": 0, "timezone": "Asia/Seoul"},
     {**BASE, "latitude": 37.5},
     {**BASE, "latitude": 37.5, "longitude": 127},
+    {**BASE, "max_magnitude": 5.6},
 ])
 def test_bad_input_returns_validation_error_not_500(body):
     response = client.post("/api/v1/readings/preview", json=body)
@@ -102,3 +103,16 @@ def test_calculation_limits(patch, code):
     response = client.post("/api/v1/readings/preview", json={**BASE, **patch})
     assert response.status_code == 422, response.text
     assert response.json()["error"]["code"] == code
+
+
+def test_full_bright_subset_preview():
+    if not get_settings().astro_ephemeris_abspath.exists():
+        pytest.skip("Local ephemeris required")
+    response = client.post("/api/v1/readings/preview", json={**BASE, "max_magnitude": 5.5})
+    assert response.status_code == 200, response.text
+    data = response.json()["data"]
+    assert data["astronomy_meta"]["catalog_version"] == "hipparcos-i239-vmag5.5-v1"
+    assert data["astronomy_meta"]["candidate_count"] > 1000
+    assert data["selected_star"]["magnitude"] <= 5.5
+    assert data["metrics"]["altitude_deg"] > 81.5
+    assert data["selected_constellation"]["code"]

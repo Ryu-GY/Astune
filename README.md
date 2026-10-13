@@ -29,7 +29,7 @@ npm run dev
 
 - 미리보기: <http://127.0.0.1:3000/readings/preview>
 - Python API 문서: <http://127.0.0.1:8000/docs>
-- 기본 예제: 1995-05-05 15:00, Asia/Seoul, 위도 37.5665 / 경도 126.978 → Capella (HIP 24608), 고도 약 81.565°
+- 기본 예제: 1995-05-05 15:00, Asia/Seoul, 위도 37.5665 / 경도 126.978 → Capella (HIP 24608), 고도 약 81.564° (최대 등급 2.0)
 
 ## 통합 구조
 
@@ -37,7 +37,8 @@ npm run dev
 | --- | --- |
 | `astune-backend/app/` | FastAPI 기본 설정, 예외 처리, 도시 검색, 계산 API |
 | `astune-backend/app/astro/` | Skyfield 계산 코어, 별 목록 로딩, 시간대·서머타임 처리 |
-| `data/astro/bright-stars.json` | 현재 사용하는 31개 밝은 별의 공통 카탈로그 |
+| `data/astro/bright-stars.json` | Hipparcos Vmag ≤ 5.5, 좌표가 있는 2,848개 항목 |
+| `data/astro/bright-stars.meta.json` | 출처·버전·해시·제외 항목·좌표 기준 시점 |
 | `src/lib/astronomy/core-client.ts` | Next.js 서버와 Python 계산 API 사이의 어댑터 |
 | `src/lib/readings/` | 규칙 선택, 문구 생성, 5개 해석 영역, 4개 점수 |
 | `src/server/services/preview-service.ts` | 입력 검증 → 천문 계산 → 해석 → 기존 화면 응답 연결 |
@@ -45,7 +46,22 @@ npm run dev
 
 실제 미리보기 경로는 `브라우저 → Next.js API → FastAPI/Skyfield → 해석 엔진 → 결과 카드`입니다. 이전 TypeScript 계산·해석 모듈은 남아 있지만 이 경로에서 사용하지 않습니다. 새 패키지·클래스·앱 표기는 Astune으로 통일했습니다.
 
-대표 별은 밝기 제한을 만족하고 지평선 위에 있는 카탈로그 별 중 고도가 가장 높은 별입니다. 현재 카탈로그는 전체 Hipparcos 목록이 아닌 31개 샘플입니다. 해석과 점수는 상징적 규칙으로 생성합니다.
+대표 별은 밝기 제한을 만족하고 지평선 위에 있는 카탈로그 별 중 고도가 가장 높은 별입니다. Hipparcos 원본 118,218개 중 Vmag ≤ 5.5인 2,851개에서 좌표 누락 3개를 제외한 2,848개를 사용합니다. 좌표의 J1991.25 기준 시점, 고유운동, 유효한 시차를 Skyfield 계산에 반영합니다. 해석과 점수는 상징적 규칙으로 생성합니다.
+
+카탈로그는 Git에 포함되어 있어 앱 실행 시 별 목록 다운로드가 필요하지 않습니다. 재생성이 필요한 경우에만 다음을 실행합니다.
+
+```powershell
+npm run backend:catalog -- --download
+```
+
+최초 원본 다운로드 후에는 `npm run backend:catalog`만으로 오프라인 재생성할 수 있습니다. 원본 해시가 다르면 기존 카탈로그를 덮어쓰지 않고 실패합니다. API는 JSON과 함께 있는 `.meta.json`의 내용 해시·행 수를 검증하고 출처와 버전을 응답합니다. 예전 `.env`의 `ASTRO_CATALOG_VERSION`, `ASTRO_SOURCE_LABEL`은 더 이상 사용하지 않습니다. 데이터 교체 후 Python 서버를 재시작하세요. 자세한 출처와 재생성 규칙은 [데이터 안내](data/astro/README.md)를 참고하세요.
+
+## 개발 진행
+
+- T101 완료: 31개 샘플 → 2,848개 성표, 재생성 도구, 메타데이터 무결성 검증, 좌표 기준 시점·고유운동·시차 반영.
+- 2026-10-13 로컬 TestClient 순차 5회 측정: 최대 등급 5.5 요청 약 2.16~2.40초. 운영 환경 P95와 동시 요청 성능은 T106에서 별도로 검증해야 합니다.
+- 다음 항목: T103 도시·시간대 데이터 및 위치 검색 확대.
+- `outputs/`의 v1.4 개발 문서는 T101 착수 전 상태를 기록한 스냅샷입니다. 최신 구현 상태는 이 README와 테스트를 기준으로 확인합니다.
 
 ## 설정과 데이터베이스
 
@@ -86,7 +102,7 @@ DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변�
 }
 ```
 
-`POST /api/v1/readings/preview`에 전달합니다. 해석 코드의 `birthDate` + `birthTimeLocal` 입력도 지원합니다. 응답에는 기존 `zenithStar`, `reading`, `astronomyMeta`와 새 `interpretation`이 함께 있습니다.
+`POST /api/v1/readings/preview`에 전달합니다. 해석 코드의 `birthDate` + `birthTimeLocal` 입력도 지원합니다. 최대 등급은 -2~5.5, 기본값은 2.0입니다. 5.5를 초과하면 카탈로그 범위 밖이므로 검증 오류를 반환합니다. 응답에는 기존 `zenithStar`, `reading`, `astronomyMeta`와 새 `interpretation`이 함께 있습니다.
 
 시간은 UTC 오프셋 없는 현지시각으로 전달합니다. 서머타임으로 같은 시각이 두 번 발생하면 `dstFold: 0` 또는 `1`을 지정해야 합니다. 존재하지 않는 시각은 오류로 반환합니다. DE421의 날짜 범위 밖 요청도 명시적으로 거절합니다.
 
