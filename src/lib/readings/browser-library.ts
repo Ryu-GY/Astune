@@ -6,7 +6,8 @@ const number = z.number();
 const dimension = z.enum(["personality", "love", "career", "money"]);
 const dataSchema = z.object({
   ok: z.literal(true),
-  input: z.object({ name: string.optional(), birthAtLocal: string, timezone: string, latitude: number, longitude: number, locationName: string.optional(), maxMagnitude: number.optional(), dstFold: z.union([z.literal(0), z.literal(1)]).optional() }),
+  input: z.object({ name: string.optional(), birthAtLocal: string, birthTimeUnknown: z.boolean().optional(), timezone: string, latitude: number, longitude: number, locationName: string.optional(), maxMagnitude: number.optional(), dstFold: z.union([z.literal(0), z.literal(1)]).optional() }),
+  calculationNotice: z.object({code: z.literal("BIRTH_TIME_UNKNOWN"), referenceTimeLocal: string, message: string}).optional(),
   zenithStar: z.object({ hipId: number, name: string, constellationCode: string, constellationName: string, magnitude: number, altitudeDeg: number, azimuthDeg: number, zenithDistanceDeg: number }),
   reading: z.object({ title: string, summary: string, keywords: z.array(string), love: string, career: string, money: string }),
   astronomyMeta: z.object({ sourceLabel: string, catalogVersion: string, engineName: string, candidateCount: number, calculatedAtUtc: string }),

@@ -1,6 +1,7 @@
 import { DomainError } from "./errors";
 import { DateTime } from "luxon";
 import type { PreviewReadingRequest } from "./types";
+import { UNKNOWN_BIRTH_TIME_REFERENCE } from "./birth-time";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
@@ -33,7 +34,10 @@ export function validatePreviewRequest(input: unknown): PreviewReadingRequest {
   }
 
   const birthDate = requireString(input, "birthDate");
-  const birthTimeLocal = requireString(input, "birthTimeLocal");
+  if (input.birthTimeUnknown !== undefined && typeof input.birthTimeUnknown !== "boolean") {
+    throw new DomainError("VALIDATION_ERROR", "birthTimeUnknown must be a boolean", 400);
+  }
+  const birthTimeLocal = input.birthTimeUnknown ? UNKNOWN_BIRTH_TIME_REFERENCE : requireString(input, "birthTimeLocal");
   const locationName = requireString(input, "locationName");
   const latitude = requireNumber(input, "latitude");
   const longitude = requireNumber(input, "longitude");
@@ -69,6 +73,7 @@ export function validatePreviewRequest(input: unknown): PreviewReadingRequest {
   return {
     birthDate,
     birthTimeLocal,
+    birthTimeUnknown: input.birthTimeUnknown as boolean | undefined,
     timezone,
     dstFold: dstFoldRaw as 0 | 1 | undefined,
     locationName,

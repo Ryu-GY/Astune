@@ -7,6 +7,7 @@ export type ReadingRequestMode = "preview" | "save";
 export interface PreviewReadingRequest {
   birthDate: string;
   birthTimeLocal: string;
+  birthTimeUnknown?: boolean;
   timezone?: string;
   dstFold?: 0 | 1;
   locationName: string;

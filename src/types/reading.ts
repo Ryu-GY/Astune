@@ -1,6 +1,7 @@
 export type PreviewReadingInput = {
   name?: string;
   birthAtLocal: string;
+  birthTimeUnknown?: boolean;
   timezone: string;
   latitude: number;
   longitude: number;
@@ -44,5 +45,6 @@ export type ReadingPreviewResponse = {
   reading: ReadingBody;
   astronomyMeta: AstronomyMeta;
   interpretation: PreviewReadingResult;
+  calculationNotice?: { code: "BIRTH_TIME_UNKNOWN"; referenceTimeLocal: string; message: string };
 };
 import type { PreviewReadingResult } from "@/lib/readings/types";

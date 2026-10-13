@@ -109,6 +109,8 @@ DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변�
 
 시간은 UTC 오프셋 없는 현지시각으로 전달합니다. 서머타임으로 같은 시각이 두 번 발생하면 `dstFold: 0` 또는 `1`을 지정해야 합니다. 존재하지 않는 시각은 오류로 반환합니다. DE421의 날짜 범위 밖 요청도 명시적으로 거절합니다.
 
+출생 시간을 모르면 `birthTimeUnknown: true`와 날짜만 전달할 수 있습니다. 현지 낮 12시 기준의 참고 리딩을 계산하고 입력·결과·보관 화면에 정확한 대표 별을 확정할 수 없다는 경고를 표시합니다. [시간 모름 동작과 검증](docs/verification/unknown-birth-time.md).
+
 Python API는 `birth_date`, `birth_time_local`(기존 `birth_time`도 허용), `timezone`, `latitude`, `longitude`를 받습니다. 좌표에서 시간대를 추론하므로 Python 측의 `timezone`은 생략할 수 있습니다. 좌표 대신 `city_name`도 받으며 중복 도시 이름은 임의 선택하지 않고 후보 선택을 요구합니다.
 
 `GET /api/v1/locations/resolve?q=서울`은 로컬 도시 검색, POST에 `{"latitude":40.7128,"longitude":-74.006}`을 전달하면 좌표와 `America/New_York` 시간대를 반환합니다. Next.js 위치 API는 `q`, `countryCode`, `allowExternal`, Python API는 `query`, `country_code`, `allow_external`을 사용합니다. 육지 밖이나 경계에서 시간대를 찾지 못하면 직접 입력해야 합니다. 현대 경계로 시간대를 찾고 zoneinfo로 과거 오프셋을 적용하므로 과거 행정 경계 변경이 있는 출생지는 보정이 필요할 수 있습니다. [위치 데이터·외부 검색 설정·지도 안내](data/locations/README.md).

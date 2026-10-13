@@ -6,12 +6,15 @@ import { StarFeature } from "@/components/reading/StarFeature";
 import { Icon } from "@/components/ui/Icon";
 import type { ReadingPreviewResponse } from "@/types/reading";
 import { ManualLocationFields } from "./ManualLocationFields";
+import { BirthTimeNotice } from "@/components/reading/BirthTimeNotice";
+import timeStyles from "@/components/reading/BirthTimeNotice.module.css";
 
 type City = { name: string; country: string; timezone: string; latitude: number; longitude: number; aliases?: string[] };
 
 export function PreviewReadingForm({ cities }: { cities: City[] }) {
   const [birthDate, setBirthDate] = useState("1995-05-05");
   const [birthTime, setBirthTime] = useState("15:00");
+  const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
   const [cityName, setCityName] = useState("Seoul");
   const [manualCity, setManualCity] = useState({ locationName: "", timezone: "Asia/Seoul", latitude: "37.5665", longitude: "126.978" });
   const [name, setName] = useState("");
@@ -51,9 +54,10 @@ export function PreviewReadingForm({ cities }: { cities: City[] }) {
         body: JSON.stringify({
           ...location,
           ...(name.trim() ? { name: name.trim() } : {}),
-          birthAtLocal: birthDate + "T" + birthTime + ":00",
+          birthAtLocal: birthTimeUnknown ? birthDate : birthDate + "T" + birthTime + ":00",
+          birthTimeUnknown,
           maxMagnitude: Number(maxMagnitude),
-          ...(dstFold !== "" ? { dstFold: Number(dstFold) } : {}),
+          ...(!birthTimeUnknown && dstFold !== "" ? { dstFold: Number(dstFold) } : {}),
         }),
       });
       const json = await response.json();
@@ -82,16 +86,17 @@ export function PreviewReadingForm({ cities }: { cities: City[] }) {
           <legend className="sr-only">나의 출생 정보</legend>
           <div className="birth-fields">
             <div><label className="label" htmlFor="birth-date">생년월일</label><input className="input" id="birth-date" type="date" required value={birthDate} onChange={event => setBirthDate(event.target.value)} /></div>
-            <div><label className="label" htmlFor="birth-time">태어난 시간</label><input className="input" id="birth-time" type="time" required value={birthTime} onChange={event => setBirthTime(event.target.value)} /></div>
+            <div><label className="label" htmlFor="birth-time">태어난 시간</label><input className="input" id="birth-time" type="time" required={!birthTimeUnknown} disabled={birthTimeUnknown} value={birthTimeUnknown ? "" : birthTime} onChange={event => setBirthTime(event.target.value)} /><label className={timeStyles.option}><input type="checkbox" checked={birthTimeUnknown} onChange={event => { setBirthTimeUnknown(event.target.checked); setResult(null); setError(""); }} />태어난 시간 모름</label></div>
           </div>
+          {birthTimeUnknown ? <BirthTimeNotice /> : null}
           <div className="city-field"><label className="label" htmlFor="birth-city">태어난 도시</label><div className="select-wrap"><select className="select" id="birth-city" value={cityName} onChange={event => setCityName(event.target.value)}>{cities.map(city => <option value={city.name} key={city.name}>{city.aliases?.[0] || city.name} · {city.country}</option>)}<option value="manual">다른 도시 · 직접 입력</option></select><Icon name="pin" /></div></div>
           {isManual ? <ManualLocationFields value={manualCity} onChange={setManualCity} disabled={loading} /> : null}
           <details className="advanced-options"><summary>세부 설정 <span>이름 · 별의 밝기 · 서머타임</span></summary><div className="advanced-content">
             <div><label htmlFor="name" className="label">이름 <span className="optional">선택</span></label><input className="input" id="name" value={name} maxLength={50} onChange={event => setName(event.target.value)} placeholder="어떻게 불러드릴까요?" /></div>
             <div><label htmlFor="maxMagnitude" className="label">계산할 별의 최대 등급</label><input id="maxMagnitude" className="input" type="number" min="-2" max="5.5" step="0.1" required value={maxMagnitude} onChange={event => setMaxMagnitude(event.target.value)} /><p className="help">기본 2.0 · 최대 5.5등급까지. 숫자가 작을수록 밝은 별을 찾습니다.</p></div>
-            <div><label htmlFor="dstFold" className="label">서머타임으로 출생 시간이 겹치는 경우</label><select className="select" id="dstFold" value={dstFold} onChange={event => setDstFold(event.target.value)}><option value="">해당 없음 / 확인 필요</option><option value="0">첫 번째 시각</option><option value="1">두 번째 시각</option></select></div>
+            <div><label htmlFor="dstFold" className="label">서머타임으로 출생 시간이 겹치는 경우</label><select className="select" id="dstFold" disabled={birthTimeUnknown} value={birthTimeUnknown ? "" : dstFold} onChange={event => setDstFold(event.target.value)}><option value="">해당 없음 / 확인 필요</option><option value="0">첫 번째 시각</option><option value="1">두 번째 시각</option></select></div>
           </div></details>
-          <button className="button find-star-button" type="submit">{loading ? <><span className="loading-star"><Icon name="star" /></span>그날의 하늘을 살펴보는 중</> : <>나의 별 찾기 <Icon name="arrow" /></>}</button>
+          <button className="button find-star-button" type="submit">{loading ? <><span className="loading-star"><Icon name="star" /></span>그날의 하늘을 살펴보는 중</> : <>{birthTimeUnknown ? "참고 리딩 보기" : "나의 별 찾기"} <Icon name="arrow" /></>}</button>
         </fieldset>
         <div className="form-feedback" aria-live="polite">{loading ? <p className="help">잠시만 기다려 주세요.</p> : null}{error ? <p className="error" role="alert">{error}</p> : null}</div>
         <p className="form-note">태어난 곳의 현지 시각을 입력해 주세요.</p>

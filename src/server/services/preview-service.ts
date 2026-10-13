@@ -7,6 +7,7 @@ import { InMemoryRuleRepository } from "@/lib/readings/repositories/in-memory-ru
 import { PrismaRuleRepository } from "@/lib/readings/repositories/prisma-rule-repository";
 import type { RuleRepository } from "@/lib/readings/repositories/rule-repository";
 import type { ReadingPreviewResponse } from "@/types/reading";
+import { birthTimeNotice, referenceTimeWording } from "@/lib/readings/birth-time";
 
 const builtinRepository = new InMemoryRuleRepository(DEFAULT_RULE_VERSION, DEFAULT_INTERPRETATION_RULES);
 
@@ -32,13 +33,17 @@ export async function previewReading(input: unknown, dependencies: {
     const { prisma } = await import("@/lib/db/prisma");
     repository = new PrismaRuleRepository(prisma);
   }
-  const interpretation = await new PreviewReadingService(repository).generate({
+  const generated = await new PreviewReadingService(repository).generate({
     input: {
       birthDate: parsed.birthAtLocal.split("T")[0], birthTimeLocal: parsed.birthAtLocal.split("T")[1],
       timezone: parsed.timezone, dstFold: parsed.dstFold, latitude: parsed.latitude, longitude: parsed.longitude,
       locationName: parsed.locationName || "Coordinates"
     }, astro
   });
+  const interpretation = parsed.birthTimeUnknown ? {
+    ...generated, summary: referenceTimeWording(generated.summary),
+    sections: generated.sections.map(section => ({...section, content: referenceTimeWording(section.content)})),
+  } : generated;
   const section = (type: string) => interpretation.sections.find(value => value.type === type)?.content || "";
   return {
     ok: true, input: parsed,
@@ -48,10 +53,10 @@ export async function previewReading(input: unknown, dependencies: {
       ...astro.metrics
     },
     reading: {
-      title: (parsed.name || "당신") + "의 " + astro.selectedStar.displayName + " 리딩",
+      title: (parsed.name || "당신") + "의 " + astro.selectedStar.displayName + (parsed.birthTimeUnknown ? " 참고 리딩" : " 리딩"),
       summary: interpretation.summary, keywords: [astro.selectedConstellation.nameKo, astro.selectedStar.displayName],
       love: section("love"), career: section("career"), money: section("money")
     },
-    astronomyMeta, interpretation
+    astronomyMeta, interpretation, calculationNotice: birthTimeNotice(parsed.birthTimeUnknown)
   };
 }

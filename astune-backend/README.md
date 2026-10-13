@@ -13,7 +13,7 @@ uv run python -m app.astro.prepare_data
 uv run uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-API 문서는 <http://127.0.0.1:8000/docs>에서 확인합니다.
+API 문서는 <http://127.0.0.1:8000/docs>에서 확인합니다. 요청 예제와 실제 `ErrorResponse` 모델을 제공하며 기계 판독 스키마는 `/openapi.json`입니다. [공개 Next.js와 내부 FastAPI의 계약·오류·재현 방법](../docs/api.md)을 함께 참고하세요.
 
 `POST /api/v1/readings/preview` 요청 예시:
 
@@ -29,13 +29,14 @@ API 문서는 <http://127.0.0.1:8000/docs>에서 확인합니다.
 }
 ```
 
-기존 `birth_time` 필드도 받습니다. 좌표는 위도·경도를 함께 전달하며 시간대를 생략하면 timezonefinder로 육지 시간대를 찾습니다. 직접 지정한 유효한 IANA 시간대가 우선합니다. `city_name`은 공용 도시 사전에서 한글 별칭·영문 이름으로 검색합니다. 시간 모름에 임의 시각을 대입하는 기능은 제공하지 않습니다.
+기존 `birth_time` 필드도 받습니다. 좌표는 위도·경도를 함께 전달하며 시간대를 생략하면 timezonefinder로 육지 시간대를 찾습니다. 직접 지정한 유효한 IANA 시간대가 우선합니다. `city_name`은 공용 도시 사전에서 한글 별칭·영문 이름으로 검색합니다. Python API는 항상 계산 시각을 받습니다. Next.js의 시간 모름 기능은 경고와 함께 현지 낮 12시를 명시적 참고 시각으로 전달합니다.
 
 ## 위치 검색
 
 - `GET /api/v1/locations/resolve?q=울산`: 로컬 사전만 검색합니다.
 - `POST /api/v1/locations/resolve`에 `{"latitude":40.7128,"longitude":-74.006}`: 좌표와 추론한 시간대, 출처를 반환합니다.
 - POST의 `query`, `country_code`, `timezone`, `allow_external`은 선택 필드입니다. 도시 이름 또는 좌표 쌍이 필요합니다.
+- `limit`은 1~10 정수, 기본 5입니다. 후보는 `data.items`로 반환하며 Next.js 공개 API는 이를 `data.candidates`로 변환합니다.
 - 좌표 시간대와 검색 결과를 기본 24시간·각 2,048개 한도로 캐시합니다. 실패는 캐시하지 않습니다. `LOCATION_CACHE_TTL_SECONDS`, `LOCATION_CACHE_SIZE`로 조정합니다.
 - 외부 검색은 `GEOCODER_ENABLED=true`와 요청의 `allow_external=true`가 모두 있어야 실행합니다. Open-Meteo 무료 서비스는 비상업 용도이며 출처 표기가 필요합니다. 제한은 프로세스별이므로 활성화 시 단일 워커로 사용하세요. [위치 데이터와 서비스 조건](../data/locations/README.md).
 

@@ -55,6 +55,8 @@ export async function createReading(
       astronomyMetaJson: JSON.stringify(preview.astronomyMeta),
       interpretationMetaJson: JSON.stringify({
         title: preview.reading.title,
+        birthTimeUnknown: preview.input.birthTimeUnknown || false,
+        calculationNotice: preview.calculationNotice,
         ...preview.interpretation
       }),
       catalogVersion: preview.astronomyMeta.catalogVersion,
@@ -91,6 +93,12 @@ export async function createBirthProfile(
   session: { userId: string }
 ) {
   const parsed = createReadingSchema.parse(input);
+
+  if (parsed.birthTimeUnknown) {
+    throw new AppError("시간 모름 결과는 참고 리딩으로 보관해 주세요. 출생 프로필에는 실제 출생 시각이 필요합니다.", {
+      statusCode: 400, code: "BIRTH_TIME_REQUIRED_FOR_PROFILE"
+    });
+  }
 
   const created = await prisma.birthProfile.create({
     data: {
