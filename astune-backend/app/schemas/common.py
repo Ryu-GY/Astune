@@ -1,12 +1,14 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class ErrorBody(BaseModel):
     code: str
     message: str
-    details: dict[str, Any] = Field(default_factory=dict)
+    details: dict[str, Any] | None = None
+    category: str
+    recovery: str
     request_id: str | None = None
 
 

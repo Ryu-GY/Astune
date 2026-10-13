@@ -19,7 +19,7 @@ def test_openapi_documents_internal_fields_examples_and_real_error_envelopes():
     assert "birth_time" not in preview["properties"]
     for path in ["/api/v1/locations/resolve", "/api/v1/readings/preview"]:
         responses = schema["paths"][path]["post"]["responses"]
-        for status in ["422", "429", "500", "503"]:
+        for status in ["400", "422", "429", "500", "503"]:
             assert responses[status]["content"]["application/json"]["schema"]["$ref"].endswith("/ErrorResponse")
     properties = schema["components"]["schemas"]["PreviewData"]["properties"]
     assert "selected_star" in properties
@@ -40,13 +40,13 @@ def test_location_limit_uses_cached_full_candidates_and_remains_strict(monkeypat
     client = TestClient(app)
     for limit in [0, 11, 1.5, True, "3"]:
         response = client.post("/api/v1/locations/resolve", json={"query": "서울", "limit": limit})
-        assert response.status_code == 422
+        assert response.status_code == 400
         assert response.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
 def test_request_id_is_returned_on_domain_validation_and_success_responses():
     client = TestClient(app)
-    for payload, status in [({"query": "서울", "limit": 1}, 200), ({"latitude": 91}, 422),
+    for payload, status in [({"query": "서울", "limit": 1}, 200), ({"latitude": 91}, 400),
                             ({"latitude": 0, "longitude": -140}, 422)]:
         response = client.post("/api/v1/locations/resolve", json=payload, headers={"X-Request-ID": "contract-test"})
         assert response.status_code == status
@@ -54,7 +54,7 @@ def test_request_id_is_returned_on_domain_validation_and_success_responses():
         if status != 200:
             assert response.json()["error"]["request_id"] == "contract-test"
     response = client.post("/api/v1/locations/resolve", content="{", headers={"X-Request-ID": "not valid"})
-    assert response.status_code == 422
+    assert response.status_code == 400
     assert response.headers["X-Request-ID"] != "not valid"
     assert response.json()["error"]["request_id"] == response.headers["X-Request-ID"]
 

@@ -100,6 +100,7 @@ export async function createBirthProfile(
     });
   }
 
+  await previewReading(parsed); // Validate DST and ephemeris before any database write.
   const created = await prisma.birthProfile.create({
     data: {
       userId: session.userId,

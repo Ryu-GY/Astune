@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 import type { ResolveLocationBody } from "@/lib/validation/location";
-import { upstreamHeaders } from "@/lib/utils/request-context";
+import { traceStage, upstreamHeaders } from "@/lib/utils/request-context";
+import { publicError, errorPolicy } from "@/lib/errors/error-policy";
 
 const responseSchema = z.object({
   success: z.literal(true),
@@ -18,7 +19,11 @@ const responseSchema = z.object({
 });
 const errorSchema = z.object({error: z.object({code: z.string(), message: z.string(), details: z.unknown().optional()})});
 
-export async function requestLocations(input: ResolveLocationBody, fetcher: typeof fetch = fetch) {
+export function requestLocations(input: ResolveLocationBody, fetcher: typeof fetch = fetch) {
+  return traceStage("location", () => resolveLocations(input, fetcher));
+}
+
+async function resolveLocations(input: ResolveLocationBody, fetcher: typeof fetch) {
   let response: Response;
   try {
     response = await fetcher(new URL("/api/v1/locations/resolve", process.env.ASTUNE_ASTRO_API_URL || "http://127.0.0.1:8000"), {
@@ -37,10 +42,10 @@ export async function requestLocations(input: ResolveLocationBody, fetcher: type
   }
   if (!response.ok) {
     const error = errorSchema.safeParse(raw);
-    throw new AppError(error.success ? error.data.error.message : "위치 검색에 실패했습니다.", {
-      statusCode: response.status >= 400 && response.status < 500 ? response.status : 503,
-      code: error.success ? error.data.error.code : "LOCATION_SERVICE_UNAVAILABLE",
-      details: error.success ? error.data.error.details : undefined,
+    const result = publicError(error.success && errorPolicy(error.data.error.code) ? error.data.error.code : "LOCATION_INVALID_RESPONSE",
+      error.success ? error.data.error.details : undefined);
+    throw new AppError(result.error.message, {
+      statusCode: result.status, code: result.error.code, details: result.error.details,
     });
   }
   const result = responseSchema.safeParse(raw);

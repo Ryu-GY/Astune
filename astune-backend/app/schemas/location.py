@@ -11,10 +11,10 @@ class LocationRequest(BaseModel):
     ]})
     query: str | None = Field(default=None, min_length=1, max_length=100)
     country_code: str | None = Field(default=None, pattern=r"^[A-Za-z]{2}$")
-    latitude: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
-    longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
+    latitude: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False, strict=True)
+    longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False, strict=True)
     timezone: str | None = Field(default=None, min_length=1, max_length=80)
-    allow_external: bool = False
+    allow_external: bool = Field(default=False, strict=True)
     limit: int = Field(default=5, ge=1, le=10, strict=True, description="후보 수. 좌표 직접 입력은 한 개를 반환합니다.")
 
     @field_validator("country_code")

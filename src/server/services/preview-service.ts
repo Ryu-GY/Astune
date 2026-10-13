@@ -8,6 +8,7 @@ import { PrismaRuleRepository } from "@/lib/readings/repositories/prisma-rule-re
 import type { RuleRepository } from "@/lib/readings/repositories/rule-repository";
 import type { ReadingPreviewResponse } from "@/types/reading";
 import { birthTimeNotice, referenceTimeWording } from "@/lib/readings/birth-time";
+import { traceStage } from "@/lib/utils/request-context";
 
 const builtinRepository = new InMemoryRuleRepository(DEFAULT_RULE_VERSION, DEFAULT_INTERPRETATION_RULES);
 
@@ -26,20 +27,20 @@ export function normalizePreviewInput(input: unknown) {
 export async function previewReading(input: unknown, dependencies: {
   calculate?: typeof requestRepresentativeStar; repository?: RuleRepository;
 } = {}): Promise<ReadingPreviewResponse> {
-  const parsed = normalizePreviewInput(input);
+  const parsed = await traceStage("validation", () => normalizePreviewInput(input));
   const { astro, astronomyMeta } = await (dependencies.calculate || requestRepresentativeStar)(parsed);
   let repository = dependencies.repository || builtinRepository;
   if (!dependencies.repository && process.env.ASTUNE_RULE_SOURCE === "database") {
     const { prisma } = await import("@/lib/db/prisma");
     repository = new PrismaRuleRepository(prisma);
   }
-  const generated = await new PreviewReadingService(repository).generate({
+  const generated = await traceStage("interpretation", () => new PreviewReadingService(repository).generate({
     input: {
       birthDate: parsed.birthAtLocal.split("T")[0], birthTimeLocal: parsed.birthAtLocal.split("T")[1],
       timezone: parsed.timezone, dstFold: parsed.dstFold, latitude: parsed.latitude, longitude: parsed.longitude,
       locationName: parsed.locationName || "Coordinates"
     }, astro
-  });
+  }));
   const interpretation = parsed.birthTimeUnknown ? {
     ...generated, summary: referenceTimeWording(generated.summary),
     sections: generated.sections.map(section => ({...section, content: referenceTimeWording(section.content)})),

@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from app.core.error_codes import ErrorCode
-from app.core.exceptions import AstuneError, ValidationError
+from app.core.exceptions import AstuneError
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,7 +36,7 @@ class PreparedStarTarget:
 
 def _to_record(row: dict[str, Any]) -> BrightStarRecord:
     if not isinstance(row, dict):
-        raise ValidationError("each catalog row must be an object")
+        raise AstuneError(ErrorCode.CATALOG_NOT_READY, "each catalog row must be an object")
     try:
         hip_id = int(row.get("hip_id") or row.get("hipId") or row.get("id"))
         display_name = str(
@@ -57,7 +57,7 @@ def _to_record(row: dict[str, Any]) -> BrightStarRecord:
         if not all(math.isfinite(value) for value in (epoch_year, ra_motion, dec_motion, parallax)) or parallax < 0:
             raise ValueError("invalid catalog astrometry")
     except (KeyError, TypeError, ValueError) as exc:
-        raise ValidationError(
+        raise AstuneError(ErrorCode.CATALOG_NOT_READY,
             "bright_stars.json row has invalid schema",
             details={"row": row},
         ) from exc
@@ -102,14 +102,14 @@ def load_bright_star_catalog(catalog_path: str) -> tuple[BrightStarRecord, ...]:
         ) from exc
 
     if not isinstance(raw, list):
-        raise ValidationError(
+        raise AstuneError(ErrorCode.CATALOG_NOT_READY,
             "bright star catalog root must be a JSON array",
             details={"catalog_path": str(path)},
         )
 
     records = tuple(_to_record(row) for row in raw)
     if len({record.hip_id for record in records}) != len(records):
-        raise ValidationError("catalog contains duplicate HIP IDs")
+        raise AstuneError(ErrorCode.CATALOG_NOT_READY, "catalog contains duplicate HIP IDs")
     if not records:
         raise AstuneError(
             ErrorCode.BRIGHT_STAR_SUBSET_EMPTY,

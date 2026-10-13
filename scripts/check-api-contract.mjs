@@ -49,7 +49,7 @@ const internal = await post(python, "readings/preview", {birth_date:"1995-05-05"
 assert.equal(internal.data.selected_star.id, preview.data.zenithStar.hipId);
 assert.equal(internal.data.sections, undefined);
 assert.equal((await post(python, "locations/resolve", {query:"서울",limit:1})).data.items[0].timezone, "Asia/Seoul");
-assert.equal((await post(python, "locations/resolve", {query:"서울",limit:11}, 422)).error.code, "VALIDATION_ERROR");
+assert.equal((await post(python, "locations/resolve", {query:"서울",limit:11}, 400)).error.code, "VALIDATION_ERROR");
 const openapi = await (await fetch(`${python}/openapi.json`)).json();
 assert(openapi.paths["/api/v1/readings/preview"].post.responses["422"].content["application/json"].schema.$ref.endsWith("/ErrorResponse"));
 console.log(`PASS: ${checked} real HTTP cases, public/internal envelopes, request IDs, OpenAPI, locations, DST and interpretation.`);

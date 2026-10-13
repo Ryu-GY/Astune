@@ -174,7 +174,7 @@ def test_location_api_and_preview_without_timezone():
     assert response.json()["data"]["items"][0]["timezone"] == "Asia/Seoul"
     assert client.get("/api/v1/locations/resolve", params={"q": "서울"}).json()["data"]["items"][0]["city_name"] == "Seoul"
     for invalid in [{}, {"latitude": 1}, {"latitude": 91, "longitude": 0}, {"query": "  "}, {"query": "Seoul", "timezone": " "}]:
-        assert client.post("/api/v1/locations/resolve", json=invalid).status_code == 422
+        assert client.post("/api/v1/locations/resolve", json=invalid).status_code == 400
     from app.core.config import get_settings
     if get_settings().astro_ephemeris_abspath.exists():
         result = client.post("/api/v1/readings/preview", json={"birth_date": "1995-05-05", "birth_time_local": "15:00",

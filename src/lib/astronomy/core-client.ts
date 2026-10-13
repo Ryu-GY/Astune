@@ -2,7 +2,8 @@ import { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 import type { PreviewReadingInput, AstronomyMeta } from "@/types/reading";
 import type { AstroResult } from "@/lib/readings/types";
-import { upstreamHeaders } from "@/lib/utils/request-context";
+import { recordCalculation, traceStage, upstreamHeaders } from "@/lib/utils/request-context";
+import { publicError, errorPolicy } from "@/lib/errors/error-policy";
 
 const coreResponseSchema = z.object({
   success: z.literal(true),
@@ -20,7 +21,11 @@ const coreResponseSchema = z.object({
 });
 const coreErrorSchema = z.object({ error: z.object({ code: z.string(), message: z.string(), details: z.unknown().optional() }) });
 
-export async function requestRepresentativeStar(input: PreviewReadingInput, fetcher: typeof fetch = fetch): Promise<{
+export function requestRepresentativeStar(input: PreviewReadingInput, fetcher: typeof fetch = fetch) {
+  return traceStage("astronomy", () => calculate(input, fetcher));
+}
+
+async function calculate(input: PreviewReadingInput, fetcher: typeof fetch): Promise<{
   astro: AstroResult; astronomyMeta: AstronomyMeta;
 }> {
   const [birthDate, birthTime] = input.birthAtLocal.split("T");
@@ -47,10 +52,10 @@ export async function requestRepresentativeStar(input: PreviewReadingInput, fetc
   }
   if (!response.ok) {
     const error = coreErrorSchema.safeParse(body);
-    throw new AppError(error.success ? error.data.error.message : "천문 계산에 실패했습니다.", {
-      statusCode: response.status >= 400 && response.status < 500 ? response.status : 503,
-      code: error.success ? error.data.error.code : "CALCULATION_FAILED",
-      details: error.success ? error.data.error.details : undefined
+    const result = publicError(error.success && errorPolicy(error.data.error.code) ? error.data.error.code : "ASTRO_INVALID_RESPONSE",
+      error.success ? error.data.error.details : undefined);
+    throw new AppError(result.error.message, {
+      statusCode: result.status, code: result.error.code, details: result.error.details
     });
   }
   const parsed = coreResponseSchema.safeParse(body);
@@ -62,6 +67,7 @@ export async function requestRepresentativeStar(input: PreviewReadingInput, fetc
     sourceLabel: meta.source_label, catalogVersion: meta.catalog_version, engineName: meta.engine_name,
     candidateCount: meta.candidate_count, calculatedAtUtc: meta.calculated_at_utc
   };
+  recordCalculation(astronomyMeta);
   return {
     astro: {
       selectedStar: { id: star.id, displayName: star.display_name, magnitude: star.magnitude },

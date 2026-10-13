@@ -1,6 +1,7 @@
 from typing import Any
 
 from app.core.error_codes import ErrorCode
+from app.core.error_policy import POLICIES
 
 
 class AppException(Exception):
@@ -15,7 +16,7 @@ class AppException(Exception):
         super().__init__(message)
         self.code = code
         self.message = message
-        self.status_code = status_code
+        self.status_code = POLICIES.get(code, {}).get("status", status_code)
         self.details = details or {}
 
 

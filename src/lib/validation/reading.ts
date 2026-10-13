@@ -1,13 +1,15 @@
 import { z } from "zod";
 import { DateTime } from "luxon";
 import { UNKNOWN_BIRTH_TIME_REFERENCE } from "@/lib/readings/birth-time";
+import { birthDateIssue } from "./birth-date-policy";
+import { errorPolicy } from "@/lib/errors/error-policy";
 
 const readingFields = z.object({
   name: z.string().trim().min(1).max(50).optional(),
   birthAtLocal: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}(T([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?)?$/)
     .refine(value => DateTime.fromISO(value, { zone: "UTC" }).isValid, "유효한 출생 날짜가 필요합니다."),
   birthTimeUnknown: z.boolean().optional(),
-  timezone: z.string().trim().min(3).refine(value => DateTime.now().setZone(value).isValid, "유효한 시간대가 필요합니다."),
+  timezone: z.string().trim().min(1).max(80),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   locationName: z.string().trim().max(120).optional(),
@@ -19,6 +21,11 @@ function requireKnownTime(input: z.infer<typeof readingFields>, context: z.Refin
   if (!input.birthTimeUnknown && !input.birthAtLocal.includes("T")) {
     context.addIssue({code: z.ZodIssueCode.custom, path: ["birthAtLocal"], message: "출생 시간을 입력하거나 시간 모름을 선택해 주세요."});
   }
+  const code = birthDateIssue(input.birthAtLocal.split("T")[0], input.timezone);
+  if (code) context.addIssue({ code: z.ZodIssueCode.custom,
+    path: [code === "TIMEZONE_NOT_FOUND" ? "timezone" : "birthAtLocal"],
+    message: errorPolicy(code)!.message, params: { errorCode: code },
+  });
 }
 
 function useReferenceTime<T extends z.infer<typeof readingFields>>(input: T): T {

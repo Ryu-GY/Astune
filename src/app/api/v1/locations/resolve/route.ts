@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/utils/request-body";
 import { NextRequest } from "next/server";
 import { resolveLocationSchema, resolveLocationBodySchema } from "@/lib/validation/location";
 import { requestLocations } from "@/lib/geocoding/core-client";
@@ -14,5 +15,5 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return handleApiRequest(request, async () => ok(await requestLocations(resolveLocationBodySchema.parse(await request.json()))));
+  return handleApiRequest(request, async () => ok(await requestLocations(resolveLocationBodySchema.parse(await readJsonBody(request)))));
 }

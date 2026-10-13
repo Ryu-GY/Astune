@@ -1,5 +1,5 @@
 import { apiResponse } from "./api-response";
-import { withRequestContext } from "./request-context";
+import { finishRequest, withRequestContext } from "./request-context";
 import { toApiErrorResponse } from "@/lib/errors/to-api-error";
 
 export function ok<T extends object>(result: T, status = 200) {
@@ -9,7 +9,9 @@ export function ok<T extends object>(result: T, status = 200) {
 
 export function handleApiRequest(request: Request, handler: () => Promise<Response>) {
   return withRequestContext(request, async () => {
-    try { return await handler(); }
-    catch (error) { return toApiErrorResponse(error); }
+    let response: Response;
+    try { response = await handler(); }
+    catch (error) { response = toApiErrorResponse(error); }
+    return finishRequest(request, response);
   });
 }

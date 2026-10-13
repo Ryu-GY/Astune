@@ -187,13 +187,6 @@ class AstronomyEngine:
             raise AstuneError(
                 ErrorCode.CALCULATION_FAILED,
                 "astronomical calculation failed",
-                details={
-                    "birth_date": request.birth_date.isoformat(),
-                    "birth_time_local": request.birth_time_local.isoformat(),
-                    "timezone": request.timezone,
-                    "latitude": request.latitude,
-                    "longitude": request.longitude,
-                },
             ) from exc
 
         if best is None:

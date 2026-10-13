@@ -1,6 +1,7 @@
 from datetime import date, time
+import re
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 from app.astro.schemas import RepresentativeStarResult
 from app.schemas.location import ResolvedLocation
 
@@ -15,13 +16,31 @@ class PreviewRequest(BaseModel):
     birth_time: time = Field(validation_alias=AliasChoices("birth_time_local", "birth_time"), description="UTC 오프셋 없는 출생 현지 시각. birth_time은 호환 별칭입니다.")
     city_name: str | None = Field(default=None, min_length=1, max_length=100)
     country_code: str | None = Field(default=None, pattern=r"^[A-Za-z]{2}$")
-    allow_external: bool = False
-    location_name: str | None = None
-    latitude: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
-    longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
+    allow_external: bool = Field(default=False, strict=True)
+    location_name: str | None = Field(default=None, max_length=120)
+    latitude: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False, strict=True)
+    longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False, strict=True)
     timezone: str | None = Field(default=None, min_length=1, max_length=80)
     dst_fold: int | None = Field(default=None, ge=0, le=1, strict=True)
-    max_magnitude: float = Field(default=2.0, ge=-2, le=5.5)
+    max_magnitude: float = Field(default=2.0, ge=-2, le=5.5, strict=True)
+
+    @field_validator("birth_date", mode="before")
+    @classmethod
+    def date_format(cls, value):
+        if type(value) is date:
+            return value
+        if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            raise ValueError("birth_date must be YYYY-MM-DD")
+        return value
+
+    @field_validator("birth_time", mode="before")
+    @classmethod
+    def wall_time_format(cls, value):
+        if type(value) is time and value.tzinfo is None:
+            return value
+        if not isinstance(value, str) or not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?", value):
+            raise ValueError("birth_time_local must be HH:mm[:ss] without an offset")
+        return value
 
     @model_validator(mode="after")
     def validate_location_fields(self) -> "PreviewRequest":

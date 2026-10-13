@@ -2,6 +2,7 @@ import { DomainError } from "./errors";
 import { DateTime } from "luxon";
 import type { PreviewReadingRequest } from "./types";
 import { UNKNOWN_BIRTH_TIME_REFERENCE } from "./birth-time";
+import { birthDateIssue } from "@/lib/validation/birth-date-policy";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
@@ -61,8 +62,9 @@ export function validatePreviewRequest(input: unknown): PreviewReadingRequest {
   }
 
   const timezone = typeof input.timezone === "string" && input.timezone.trim().length > 0 ? input.timezone.trim() : undefined;
-  if (!timezone || !DateTime.now().setZone(timezone).isValid) {
-    throw new DomainError("TIMEZONE_NOT_FOUND", "유효한 IANA timezone을 입력해 주세요.", 400);
+  const dateIssue = birthDateIssue(birthDate, timezone || "");
+  if (dateIssue) {
+    throw new DomainError(dateIssue, "출생 날짜와 IANA 시간대를 확인해 주세요.", 422);
   }
   const dstFoldRaw = input.dstFold;
 

@@ -159,3 +159,9 @@ npm run test:api
 ```
 
 Python 테스트는 로컬 DE421 파일이 필요하므로 먼저 `npm run backend:data`를 실행합니다. DB 규칙 테스트는 임시 SQLite 파일을 만들고 정리하며 개발 DB를 변경하지 않습니다. 프로덕션 빌드는 `npm run build`, 실행은 `npm start`이며 Python API도 별도로 실행해야 합니다.
+
+## T601–T603 완료: 오류·요청 추적·입력 검증
+
+두 서버의 오류 상태·한국어 복구 안내를 통일했습니다. 출생 정보 없이 요청 ID와 단계별 처리 시간을 기록하고, 미래 날짜·DST·천체력 범위 검증을 preview·저장·프로필에 적용합니다.
+
+검증: TypeScript 36개, Python 120개 통과(선택 원본 재생성 1개 생략), 운영 빌드 및 실제 HTTP 33개 요청·브라우저 흐름 통과. [검증 기록](docs/verification/t601-t603.md)과 [API 계약](docs/api.md)을 참고하세요.

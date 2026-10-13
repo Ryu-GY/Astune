@@ -1,6 +1,6 @@
 # Astune API 계약
 
-2026-10-13, T301–T303 기준. 브라우저는 Next.js 공개 API를 호출합니다. Next.js가 FastAPI에 위치 해석·천문 계산을 요청하고 TypeScript 규칙으로 해석을 생성합니다. 두 서버의 `/api/v1/readings/preview`는 경로가 같지만 반환하는 내용이 다릅니다.
+2026-10-13, 공개 계약 T301–T303 및 오류·검증 T601–T603 기준. 브라우저는 Next.js 공개 API를 호출합니다. Next.js가 FastAPI에 위치 해석·천문 계산을 요청하고 TypeScript 규칙으로 해석을 생성합니다. 두 서버의 `/api/v1/readings/preview`는 경로가 같지만 반환하는 내용이 다릅니다.
 
 | 구분 | Next.js 공개 API | FastAPI 내부 API |
 | --- | --- | --- |
@@ -124,24 +124,47 @@ FastAPI는 `birth_date`, `birth_time_local`(호환 별칭 `birth_time`), `latitu
 
 ## 오류와 복구
 
-| 코드 | 공개 HTTP | 의미와 복구 |
-| --- | --- | --- |
-| `VALIDATION_ERROR` | 400 또는 내부 검증의 422 | JSON·좌표·날짜·후보 수·타입 수정. FastAPI 입력 검증은 422 |
-| `TIMEZONE_NOT_FOUND` | 분리 preview 입력 400 / 내부 422 | IANA 시간대 수정. 평면 preview 검증은 `VALIDATION_ERROR` |
-| `TIMEZONE_REQUIRED` | 422 | 육지 시간대 없음. 좌표와 시간대 직접 입력 |
-| `LOCAL_TIME_AMBIGUOUS` | 422 | 반복되는 시각. `dstFold` 선택 |
-| `LOCAL_TIME_NONEXISTENT` | 422 | DST로 생략된 시각. 정확한 시각 확인 |
-| `EPHEMERIS_OUT_OF_RANGE` | 422 | 날짜가 DE421 범위 밖 |
-| `NO_VISIBLE_STAR_CANDIDATE`, `BRIGHT_STAR_SUBSET_EMPTY` | 422 | 후보 없음. 최대 등급 확인 |
-| `RULE_VERSION_NOT_FOUND` | 404 | database 모드에서 관리자가 규칙 게시 |
-| `GEOCODER_RATE_LIMITED` | 429 | 나중에 재검색하거나 직접 입력 |
-| `GEOCODER_UNAVAILABLE`, `CATALOG_NOT_READY` | 503 | 외부 검색 또는 로컬 데이터 준비 상태 확인 |
-| `LOCATION_SERVICE_UNAVAILABLE`, `ASTRO_SERVICE_UNAVAILABLE` | 503 | 내부 서버 연결·시간 초과 |
-| `LOCATION_INVALID_RESPONSE`, `ASTRO_INVALID_RESPONSE` | 502 | 내부 응답이 JSON 또는 지정 스키마와 다름 |
-| `CALCULATION_FAILED` | 503 | 내부 계산 실패. FastAPI 자체는 500, Next.js는 내부 5xx를 503으로 전달 |
-| `INTERNAL_SERVER_ERROR` | 500 | 공개 API 내부 예외. 내부 서버가 반환한 코드는 503으로 전달될 수 있음 |
+T601 공통 기준은 `data/contracts/error-policy.json`입니다. Next.js와 FastAPI는 동일한 코드에 동일한 HTTP 상태·한국어 안내를 반환합니다. 오류에는 `category`(input/auth/limit/system)와 `recovery`가 있으며, 기존 화면도 안내를 볼 수 있도록 `message`에 복구 문구를 포함합니다.
 
-내부 오류의 코드·설명·details를 보존하고 공개 요청의 `meta.requestId`로 연결합니다. `CITY_NOT_FOUND`(404), `CITY_AMBIGUOUS`(409)는 FastAPI의 도시명 직접 preview에서 발생합니다. 공개 위치 검색의 미발견은 200과 빈 후보입니다.
+| 코드 | 공통 HTTP | 복구 |
+| --- | --- | --- |
+| `VALIDATION_ERROR` | 400 | 잘못된 JSON·날짜 형식·좌표·타입·필수값 수정 |
+| `TIMEZONE_NOT_FOUND`, `TIMEZONE_REQUIRED` | 422 | 유효한 IANA 시간대 지정 |
+| `LOCAL_TIME_AMBIGUOUS` | 422 | `dstFold` 0 또는 1 선택 |
+| `LOCAL_TIME_NONEXISTENT` | 422 | DST로 생략된 현지 시각을 출생 기록과 대조 |
+| `BIRTH_DATE_IN_FUTURE` | 422 | 출생지 시간대의 오늘 또는 이전 날짜 사용 |
+| `EPHEMERIS_OUT_OF_RANGE` | 422 | 설치된 천체력의 지원 범위 확인 |
+| `NO_VISIBLE_STAR_CANDIDATE` | 422 | 최대 등급을 5.5 이내에서 높이기 |
+| `CITY_NOT_FOUND`, `CITY_AMBIGUOUS` | 404 / 409 | 도시명·국가 확인 또는 좌표 직접 입력 |
+| `GEOCODER_RATE_LIMITED` | 429 | 잠시 후 재시도 또는 직접 입력 |
+| `GEOCODER_UNAVAILABLE`, `CATALOG_NOT_READY`, `BRIGHT_STAR_SUBSET_EMPTY` | 503 | 서비스·로컬 계산 데이터 복구 후 재시도 |
+| `LOCATION_SERVICE_UNAVAILABLE`, `ASTRO_SERVICE_UNAVAILABLE` | 503 | 내부 서버 연결·시간 초과 확인 |
+| `LOCATION_INVALID_RESPONSE`, `ASTRO_INVALID_RESPONSE` | 502 | 내부 응답 형식 확인 |
+| `CALCULATION_FAILED`, `INTERNAL_SERVER_ERROR` | 500 | 요청 ID로 서버 오류 확인 |
+| `RULE_VERSION_NOT_FOUND` | 404 | 관리자에게 게시 규칙 확인 요청 |
+| `INVALID_RULE_INPUT`, `INVALID_RULE_VERSION_NAME` | 400 | 규칙 입력 수정 |
+| `RULE_VERSION_NOT_DRAFT`, `RULE_PUBLISH_CONFLICT` | 409 | 버전 상태 확인 후 재시도 |
+| `AUTH_REQUIRED`, `ADMIN_USER_ID_REQUIRED` | 401 | 로그인 세션 확인 |
+| `ADMIN_REQUIRED` | 403 | 관리자 권한 확인 |
+| `BIRTH_TIME_REQUIRED_FOR_PROFILE` | 400 | 시간 모름 결과는 참고 리딩으로 저장 |
+
+내부 500을 일괄 503으로 바꾸지 않습니다. 알 수 없는 내부 응답 코드는 502로 처리하며 원문을 노출하지 않습니다. `details`에는 검증 필드명과 선택 가능한 fold만 허용하고, 제출한 출생 정보·서버 파일 경로·예외 원문은 제외합니다. Python 오류의 `request_id`, 공개 응답의 `meta.requestId`, 양쪽 헤더의 `X-Request-ID`로 같은 요청을 연결합니다.
+
+## 입력 정책 (T603)
+
+- preview의 두 입력 형식, 리딩 저장, 출생 프로필 저장은 같은 날짜·좌표·시간대 검증을 사용합니다. 좌표는 문자열·boolean을 숫자로 바꾸지 않습니다. 출생 현지 시각에는 UTC 오프셋을 붙이지 않습니다.
+- 미래 여부는 요청 시점의 **출생지 시간대 달력 날짜**로 판단합니다. 오늘은 시각과 관계없이 허용하므로, 오전에도 시간 모름의 낮 12시 참고 결과를 볼 수 있습니다. 내일 이후는 `BIRTH_DATE_IN_FUTURE`입니다.
+- 시간 모름은 해당 날짜의 낮 12시로 정규화하고 경고를 유지합니다. 잘못된 날짜·시간대·좌표를 생략할 수 있는 옵션은 아닙니다. 정확한 시각이 필요한 출생 프로필에는 저장할 수 없습니다.
+- DST 중복·누락과 천체력 범위는 FastAPI의 실제 시간 변환·계산으로 검사합니다. 저장과 프로필 생성도 이 검사가 끝난 후에만 DB에 기록합니다. 계산 서버가 오프라인이면 저장도 실패하며 부분 프로필을 만들지 않습니다.
+- 현재 DE421의 표시 범위는 TDB 기준 1899-07-29~2053-10-09입니다. 실제 경계는 설치된 파일과 UTC 변환 결과로 판정하며, 지원 범위 밖에서 임의 날짜로 대체하거나 근사 결과를 만들지 않습니다. 미래 날짜 제한은 이 범위와 별도로 적용됩니다.
+
+## 요청 추적과 처리 시간 (T602)
+
+각 API 요청 완료 시 한 줄 JSON `request.completed` 로그를 기록합니다. 필드는 `service`, `requestId`, 파라미터를 제거한 `route`, `method`, `status`, `durationMs`, `stages`, 오류 시 `errorCode`입니다. 계산 성공 시 `calculation`에는 엔진 이름·카탈로그 버전·후보 개수만 기록합니다.
+
+Next.js 단계는 validation·astronomy·location·interpretation, Python은 location·validation·astronomy이며 해당 요청이 실행한 단계만 존재합니다. 실패한 단계의 경과 시간도 기록합니다. `Server-Timing` 응답 헤더로 단계와 총 처리 시간을 확인할 수 있습니다. Next.js astronomy 시간에는 내부 HTTP 왕복이 포함되므로 Python 계산 시간과 구분합니다.
+
+이름, 출생 날짜·시각, 좌표, 시간대, 위치 검색어, 선택된 별, 해석 문구, Cookie·Authorization, DB 행 ID, URL 쿼리, 예외 원문·스택은 애플리케이션 요청 로그에 기록하지 않습니다. 요청 ID에는 출생 정보 대신 불투명한 식별자만 사용하세요. `npm run backend:dev`는 원문 URL을 출력하는 Uvicorn access log를 끕니다. 배포 플랫폼·프록시의 별도 로그 정책은 별도로 설정해야 합니다.
 
 ## 재현
 
@@ -170,7 +193,7 @@ Invoke-WebRequest "$apiBase/readings/preview" -Method Post -ContentType 'applica
 - 공개 envelope와 위치 POST의 query·countryCode·limit·candidates를 적용했습니다. `confidenceScore`는 만들지 않으며 캐시 여부는 원천 출처와 분리합니다.
 - 구조화된 preview는 `data.interpretation`에 있습니다. 기획 예시처럼 모두 data 바로 아래로 평탄화하지 않았으며 화면용 reading·zenithStar를 함께 제공합니다.
 - 공개 preview는 해석된 좌표와 시간대를 받습니다. 도시 입력은 위치 API로 후보를 선택하는 2단계 흐름입니다. Python은 도시 입력과 시간대 추론을 직접 지원합니다.
-- 위 표의 실제 오류 코드를 보존합니다. 전체 오류·상태 정렬은 T601, 단계별 처리 시간 기록은 T602 후속 범위입니다.
+- T601 오류 정책·T602 요청 추적·T603 공통 입력 검증을 반영했습니다. 서버별 필드 표기 방식은 기존 계약을 유지합니다.
 - 저장·프로필·내 목록·관리자 API에도 같은 envelope를 적용했지만 운영 세션·DB role·소유권·페이지 처리 완료를 뜻하지 않습니다. 개발용 인증은 `ASTUNE_ALLOW_DEV_AUTH=1`인 개발 환경에만 있습니다. 인증 오류는 `AUTH_REQUIRED`(401), `ADMIN_REQUIRED`(403), `ADMIN_USER_ID_REQUIRED`(401)입니다.
 - 관리자 publish는 `POST /api/v1/admin/rule-versions/{id}/publish`이며 기획의 PUT과 다릅니다. 규칙 생성도 POST create이며 upsert는 T503 범위입니다.
 - 저장·관리자 API의 상세 완성은 T401~T504에서 이어집니다. 재현 스크립트는 위치와 저장 없는 preview만 호출합니다.

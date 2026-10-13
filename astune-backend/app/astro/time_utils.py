@@ -59,7 +59,10 @@ def resolve_local_datetime(
     seen_offsets: set[tuple[object, object]] = set()
 
     for fold in (0, 1):
-        is_valid, local_dt, utc_dt = _roundtrip_candidate(naive_local_dt, zone, fold)
+        try:
+            is_valid, local_dt, utc_dt = _roundtrip_candidate(naive_local_dt, zone, fold)
+        except OverflowError as exc:
+            raise AstuneError(ErrorCode.EPHEMERIS_OUT_OF_RANGE, "local date exceeds supported UTC conversion range") from exc
         if not is_valid:
             continue
 

@@ -8,7 +8,8 @@ export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
     datasources: { db: { url: process.env.DATABASE_URL || "file:./dev.db" } },
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"]
+    // Request telemetry reports a safe error code; Prisma messages can contain input values.
+    log: []
   });
 
 if (process.env.NODE_ENV !== "production") {

@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/utils/request-body";
 import { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/auth/session";
 import { listRuleVersions, createRuleVersion } from "@/server/services/admin-service";
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return handleApiRequest(request, async () => {
     const session = await requireAdmin(request);
-    const body = (await request.json()) as { name?: string; description?: string };
+    const body = (await readJsonBody(request)) as { name?: string; description?: string };
 
     if (!body.name?.trim()) {
       throw new AppError("name은 필수입니다.", {

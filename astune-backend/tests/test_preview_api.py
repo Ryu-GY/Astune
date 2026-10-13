@@ -51,7 +51,7 @@ def test_real_skyfield_preview():
 ])
 def test_bad_input_returns_validation_error_not_500(body):
     response = client.post("/api/v1/readings/preview", json=body)
-    assert response.status_code == 422, response.text
+    assert response.status_code == 400, response.text
     assert response.json()["error"]["code"] == "VALIDATION_ERROR"
 
 

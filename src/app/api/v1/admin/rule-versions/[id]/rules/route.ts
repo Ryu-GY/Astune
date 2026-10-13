@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/utils/request-body";
 import { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/auth/session";
 import { createInterpretationRule } from "@/server/services/admin-service";
@@ -11,7 +12,7 @@ export async function POST(
   return handleApiRequest(request, async () => {
     const session = await requireAdmin(request);
     const { id } = await context.params;
-    const body = interpretationRuleInputSchema.parse(await request.json());
+    const body = interpretationRuleInputSchema.parse(await readJsonBody(request));
 
     return ok(
       await createInterpretationRule({

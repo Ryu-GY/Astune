@@ -14,7 +14,7 @@
     "backend:sync": "uv sync --project astune-backend",
     "backend:data": "uv run --directory astune-backend python -m app.astro.prepare_data",
     "backend:catalog": "uv run --directory astune-backend python -m app.astro.build_bright_catalog",
-    "backend:dev": "uv run --directory astune-backend uvicorn app.main:app --host 127.0.0.1 --port 8000",
+    "backend:dev": "uv run --directory astune-backend uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log",
     "backend:test": "uv run --directory astune-backend pytest",
     "backend:check": "uv run --directory astune-backend python -m app.astro.check_data",
     "benchmark:preview": "node scripts/benchmark-preview.mjs",

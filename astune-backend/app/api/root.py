@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
+from app.core.error_codes import ErrorCode
+from app.core.exceptions import AppException
 from app.schemas.common import HealthResponse, HealthData
 
 router = APIRouter()
@@ -16,7 +17,7 @@ def root() -> dict[str, str]:
 def ready(request: Request):
     data = getattr(request.app.state, "astronomy_ready", None)
     if data is None:
-        return JSONResponse(status_code=503, content={"success": False, "error": {"code": "CATALOG_NOT_READY", "message": "Startup data checks have not completed"}})
+        raise AppException(code=ErrorCode.CATALOG_NOT_READY, message="Startup data checks have not completed", status_code=503)
     return {"success": True, "data": data}
 
 
