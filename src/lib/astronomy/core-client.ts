@@ -2,6 +2,7 @@ import { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 import type { PreviewReadingInput, AstronomyMeta } from "@/types/reading";
 import type { AstroResult } from "@/lib/readings/types";
+import { upstreamHeaders } from "@/lib/utils/request-context";
 
 const coreResponseSchema = z.object({
   success: z.literal(true),
@@ -27,7 +28,7 @@ export async function requestRepresentativeStar(input: PreviewReadingInput, fetc
   let response: Response;
   try {
     response = await fetcher(new URL("/api/v1/readings/preview", origin), {
-      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+      method: "POST", headers: upstreamHeaders(), cache: "no-store",
       signal: AbortSignal.timeout(30000),
       body: JSON.stringify({
         birth_date: birthDate, birth_time_local: birthTime, timezone: input.timezone,

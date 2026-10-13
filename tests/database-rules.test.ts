@@ -14,7 +14,7 @@ test("published database rules drive interpretation; draft versions do not", asy
   writeFileSync(join(scratch, "rules.db"), "");
   const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
   try {
-    execFileSync(process.execPath, ["node_modules/prisma/build/index.js", "db", "push", "--skip-generate"], {
+    execFileSync(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "deploy"], {
       cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl }, stdio: "pipe"
     });
     const user = await prisma.user.create({ data: { email: "rules-test@astune.local", role: "ADMIN" } });

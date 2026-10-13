@@ -9,7 +9,7 @@ function compareRulePriority(left: InterpretationRule, right: InterpretationRule
   return left.id.localeCompare(right.id);
 }
 
-function sortRules(rules: InterpretationRule[]): InterpretationRule[] {
+export function sortRules(rules: InterpretationRule[]): InterpretationRule[] {
   return [...rules].sort(compareRulePriority);
 }
 

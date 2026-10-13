@@ -54,6 +54,8 @@ def register_exception_handlers(app: FastAPI) -> None:
         logger.exception("Unhandled exception: %s", exc)
         return JSONResponse(
             status_code=500,
+            # ServerErrorMiddleware runs outside the request-ID middleware.
+            headers={"X-Request-ID": _request_id(request)} if _request_id(request) else {},
             content={
                 "success": False,
                 "error": {

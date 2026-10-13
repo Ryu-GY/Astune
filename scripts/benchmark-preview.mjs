@@ -36,14 +36,14 @@ async function call(target, index) {
   const body = await response.json();
   const elapsed = performance.now()-start;
   if (!response.ok) throw new Error(`${target.name}: HTTP ${response.status} ${JSON.stringify(body)}`);
-  const meta = target.python ? body.data?.astronomy_meta : body.astronomyMeta;
+  const meta = target.python ? body.data?.astronomy_meta : body.data?.astronomyMeta;
   const version = target.python ? meta?.catalog_version : meta?.catalogVersion;
   if (version !== "hipparcos-i239-vmag5.5-v1") throw new Error("Benchmark used an unexpected catalog");
-  const metrics = target.python ? body.data.metrics : body.zenithStar;
+  const metrics = target.python ? body.data.metrics : body.data.zenithStar;
   const altitude = target.python ? metrics.altitude_deg : metrics.altitudeDeg;
   const zenith = target.python ? metrics.zenith_distance_deg : metrics.zenithDistanceDeg;
   if (!(altitude > 0) || Math.abs(altitude+zenith-90) > 0.002) throw new Error("Invalid astronomy result");
-  if (!target.python && (body.interpretation?.sections?.length !== 5 || body.interpretation?.scores?.length !== 4)) {
+  if (!target.python && (body.data.interpretation?.sections?.length !== 5 || body.data.interpretation?.scores?.length !== 4)) {
     throw new Error("Incomplete interpretation response");
   }
   return elapsed;

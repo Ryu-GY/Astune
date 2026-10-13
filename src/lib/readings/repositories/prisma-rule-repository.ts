@@ -1,13 +1,22 @@
 import type { PrismaClient } from "@prisma/client";
 import type { PublishedRuleBundle, RuleLookupInput, RuleRepository } from "./rule-repository";
+import { fromPrismaRule } from "./prisma-rule-mapper";
 
-/** Adapter for this project's existing Prisma schema (constellation codes, not fixture IDs). */
+/** Read one published version and only the scopes applicable to the selected star. */
 export class PrismaRuleRepository implements RuleRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getPublishedRuleBundle(input: RuleLookupInput): Promise<PublishedRuleBundle | null> {
     const version = await this.prisma.ruleVersion.findFirst({
-      where: { status: "PUBLISHED" }, include: { rules: true },
+      where: { status: "PUBLISHED" },
+      include: { rules: {
+        where: { OR: [
+          { scopeType: "global" },
+          { scopeType: "star", starId: input.starId },
+          ...(input.constellationCode ? [{ scopeType: "constellation" as const, constellationCode: input.constellationCode }] : [])
+        ] },
+        orderBy: [{ priority: "desc" }, { id: "asc" }]
+      } },
       orderBy: [{ publishedAt: "desc" }, { id: "asc" }]
     });
     if (!version) return null;
@@ -16,15 +25,7 @@ export class PrismaRuleRepository implements RuleRepository {
         id: version.id, versionCode: version.name, status: "PUBLISHED",
         publishedAt: version.publishedAt?.toISOString() ?? null, note: version.description
       },
-      rules: version.rules.filter(rule => rule.constellationCode === "default" || rule.constellationCode === input.constellationCode).map(rule => ({
-        id: rule.id, ruleVersionId: version.id,
-        scopeType: rule.constellationCode === "default" ? "global" as const : "constellation" as const,
-        constellationCode: rule.constellationCode, priority: 100,
-        keywords: rule.keywordsCsv.split(",").map(value => value.trim()).filter(Boolean),
-        templates: {
-          overview: rule.generalText, love: rule.loveText, career: rule.careerText, money: rule.moneyText
-        }
-      }))
+      rules: version.rules.map(fromPrismaRule)
     };
   }
 }

@@ -1,11 +1,12 @@
 import type { InterpretationRule, RuleVersion } from "../types";
+import { CONSTELLATION_READINGS } from "./constellation-rules";
 
 export const DEFAULT_RULE_VERSION: RuleVersion = {
-  id: "rv_default_published",
-  versionCode: "2026Q2_v1",
+  id: "rv_builtin_2026q4_v1",
+  versionCode: "2026Q4_v1",
   status: "PUBLISHED",
-  publishedAt: "2026-04-13T09:15:00Z",
-  note: "기본 규칙 세트",
+  publishedAt: "2026-10-13T00:00:00Z",
+  note: "16개 성좌, 베텔게우스 별 규칙, 공통 fallback",
 };
 
 export const DEFAULT_INTERPRETATION_RULES: InterpretationRule[] = [
@@ -28,18 +29,15 @@ export const DEFAULT_INTERPRETATION_RULES: InterpretationRule[] = [
         "재물은 감각보다 원칙이 강할수록 좋아집니다. 소비 기준과 축적 기준을 나눠 관리하면 손실을 줄이기 쉽습니다.",
     },
   },
-  {
-    id: "ir_constellation_ori",
+  ...CONSTELLATION_READINGS.map(({ code, keywords, ...templates }): InterpretationRule => ({
+    id: `ir_constellation_${code.toLowerCase()}`,
     ruleVersionId: DEFAULT_RULE_VERSION.id,
     scopeType: "constellation",
-    constellationCode: "Ori",
+    constellationCode: code,
     priority: 100,
-    keywords: ["표현력", "주도성"],
-    templates: {
-      overview: "{constellationNameKo} 흐름은 자기표현과 존재감이 강한 편입니다. 보이는 자리에서 강점을 드러낼수록 운이 붙습니다.",
-      career: "커리어에서는 리더 역할, 발표, 조율, 기획 주도에서 강점이 큽니다. 남보다 먼저 판을 짜는 포지션이 잘 맞습니다.",
-    },
-  },
+    keywords,
+    templates
+  })),
   {
     id: "ir_star_betelgeuse",
     ruleVersionId: DEFAULT_RULE_VERSION.id,

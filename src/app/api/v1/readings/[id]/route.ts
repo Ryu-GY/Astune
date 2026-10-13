@@ -1,16 +1,13 @@
 import { NextRequest } from "next/server";
 import { getReadingById } from "@/server/services/reading-service";
-import { ok } from "@/lib/utils/http";
-import { toApiErrorResponse } from "@/lib/errors/to-api-error";
+import { handleApiRequest, ok } from "@/lib/utils/http";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  try {
+  return handleApiRequest(request, async () => {
     const { id } = await context.params;
     return ok(await getReadingById(id));
-  } catch (error) {
-    return toApiErrorResponse(error);
-  }
+  });
 }

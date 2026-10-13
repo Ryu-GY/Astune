@@ -1,13 +1,10 @@
 import { NextRequest } from "next/server";
 import { previewReading } from "@/server/services/preview-service";
-import { ok } from "@/lib/utils/http";
-import { toApiErrorResponse } from "@/lib/errors/to-api-error";
+import { handleApiRequest, ok } from "@/lib/utils/http";
 
 export async function POST(request: NextRequest) {
-  try {
+  return handleApiRequest(request, async () => {
     const body = await request.json();
     return ok(await previewReading(body));
-  } catch (error) {
-    return toApiErrorResponse(error);
-  }
+  });
 }

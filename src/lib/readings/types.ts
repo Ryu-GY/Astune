@@ -1,7 +1,7 @@
 export type SectionType = "overview" | "personality" | "love" | "career" | "money";
 export type ScoreDimension = "personality" | "love" | "career" | "money";
 export type ScopeType = "global" | "constellation" | "star";
-export type RuleVersionStatus = "DRAFT" | "PUBLISHED" | "RETIRED";
+export type RuleVersionStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ReadingRequestMode = "preview" | "save";
 
 export interface PreviewReadingRequest {

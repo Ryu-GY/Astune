@@ -5,6 +5,7 @@ import { ReadingCard } from "@/components/reading/ReadingCard";
 import { StarFeature } from "@/components/reading/StarFeature";
 import { Icon } from "@/components/ui/Icon";
 import type { ReadingPreviewResponse } from "@/types/reading";
+import type { ApiResponse } from "@/types/api";
 import { ManualLocationFields } from "./ManualLocationFields";
 import { BirthTimeNotice } from "@/components/reading/BirthTimeNotice";
 import timeStyles from "@/components/reading/BirthTimeNotice.module.css";
@@ -60,13 +61,13 @@ export function PreviewReadingForm({ cities }: { cities: City[] }) {
           ...(!birthTimeUnknown && dstFold !== "" ? { dstFold: Number(dstFold) } : {}),
         }),
       });
-      const json = await response.json();
-      if (!response.ok) {
+      const json = await response.json() as ApiResponse<Omit<ReadingPreviewResponse, "ok">>;
+      if (!response.ok || !json.success) {
         throw new Error(response.status >= 500
           ? "별을 찾는 서비스에 잠시 연결할 수 없어요. 잠시 후 다시 시도해 주세요."
-          : json.error?.message || "별을 찾지 못했어요. 입력한 정보를 확인하고 다시 시도해 주세요.");
+          : !json.success ? json.error.message : "별을 찾지 못했어요. 입력한 정보를 확인하고 다시 시도해 주세요.");
       }
-      setResult(json as ReadingPreviewResponse);
+      setResult({ ok: true, ...json.data });
     } catch (caught) {
       setError(caught instanceof Error && caught.message !== "Failed to fetch" ? caught.message : "연결이 잠시 끊겼어요. 잠시 후 다시 시도해 주세요.");
     } finally {

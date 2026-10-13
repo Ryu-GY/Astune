@@ -18,6 +18,12 @@ enum RuleVersionStatus {
   ARCHIVED
 }
 
+enum RuleScope {
+  global
+  constellation
+  star
+}
+
 model User {
   id                 String           @id @default(cuid())
   email              String           @unique
@@ -101,17 +107,21 @@ model InterpretationRule {
   id                String      @id @default(cuid())
   ruleVersionId     String
   ruleVersion       RuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Cascade)
-  constellationCode String
+  scopeType         RuleScope   @default(constellation)
+  constellationCode String?
+  starId            Int?
+  priority          Int         @default(100)
   title             String
   keywordsCsv       String
   generalText       String
+  personalityText   String      @default("")
   loveText          String
   careerText        String
   moneyText         String
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  @@unique([ruleVersionId, constellationCode])
+  @@index([ruleVersionId, scopeType, priority])
 }
 
 model AdminAuditLog {

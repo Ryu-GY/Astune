@@ -1,8 +1,10 @@
 import { SECTION_TITLES } from "./defaults";
 import { calculateScores } from "./scoring";
-import { getMatchedRuleIds, resolveSectionTemplates } from "./rule-selector";
+import { getMatchedRuleIds, resolveSectionTemplates, sortRules } from "./rule-selector";
 import { buildTemplateContext, renderTemplate } from "./template";
 import type { AstroResult, InterpretationRule, PreviewReadingResult, ReadingSection, RuleVersion } from "./types";
+import { DomainError } from "./errors";
+import { matchesRule } from "./repositories/rule-repository";
 
 function deriveSummary(sections: ReadingSection[]): string {
   const overview = sections.find((section) => section.type === "overview")?.content?.trim();
@@ -30,8 +32,16 @@ export interface InterpretParams {
 
 export class RuleBasedInterpretationEngine {
   interpret(params: InterpretParams): PreviewReadingResult {
-    const context = buildTemplateContext(params.astro, params.rules);
-    const resolvedTemplates = resolveSectionTemplates(params.rules);
+    if (params.version.status !== "PUBLISHED") {
+      throw new DomainError("RULE_VERSION_NOT_FOUND", "Published rule version not found", 404);
+    }
+    const rules = sortRules(params.rules.filter(rule => rule.ruleVersionId === params.version.id && matchesRule(rule, {
+      starId: params.astro.selectedStar.id,
+      constellationCode: params.astro.selectedConstellation.code,
+      constellationId: params.astro.selectedConstellation.id
+    })));
+    const context = buildTemplateContext(params.astro, rules);
+    const resolvedTemplates = resolveSectionTemplates(rules);
 
     const sections: ReadingSection[] = resolvedTemplates.map((resolved, index) => ({
       type: resolved.type,
@@ -47,8 +57,8 @@ export class RuleBasedInterpretationEngine {
       ruleVersionId: params.version.id,
       summary: deriveSummary(sections),
       sections,
-      scores: calculateScores(params.astro, params.rules),
-      matchedRuleIds: getMatchedRuleIds(params.rules),
+      scores: calculateScores(params.astro, rules),
+      matchedRuleIds: getMatchedRuleIds(rules),
     };
   }
 }

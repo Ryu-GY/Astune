@@ -59,6 +59,12 @@ npm run backend:catalog -- --download
 ## 개발 진행
 
 - T101 완료: 31개 샘플 → 2,848개 성표, 재생성 도구, 메타데이터 무결성 검증, 좌표 기준 시점·고유운동·시차 반영.
+- T201 완료: DB·메모리의 전역/성좌/별 규칙과 우선순위·성향 문구 정렬, 단일 게시 버전 제약, 동시 게시·실패 롤백 검증.
+- T202 완료: 16개 성좌의 5개 해석 문구, 공통 fallback, 베텔게우스 별 규칙을 하나의 세트로 관리하며 builtin과 DB seed에서 공유.
+- T203 완료: 두 규칙 소스의 미리보기 5개 섹션·4개 점수·적용 규칙 ID 일치 및 Next.js 핸들러 응답 검증.
+- T301 완료: 위치 POST의 query·countryCode·limit·직접 좌표·candidates 계약, 직접 입력 안내, 공개 envelope와 요청 ID 연결.
+- T302 완료: 저장 없는 공개 preview의 계산·해석 연동과 새 응답을 읽는 화면 검증.
+- T303 완료: [두 서버 API 계약](docs/api.md), FastAPI OpenAPI의 오류 모델·예제, `npm run test:api` 재현 도구.
 - T102 완료: 로컬 DE421 준비·검사, 시작 시 예열, `/ready`. 준비 파일의 범위는 1899-07-29~2053-10-09 TDB이며 개별 요청은 실제 순간의 범위를 다시 확인합니다.
 - T103 완료: 공용 도시 사전 13개(서울·6개 광역시·제주 포함), 오프라인 좌표→시간대 추론, 수동 보정, TTL/LRU 캐시, 선택적 외부 지오코딩과 장애 처리. 다른 도시는 지도에서 좌표·시간대를 함께 입력할 수 있습니다.
 - T104 완료: zoneinfo UTC 변환, 서머타임 중복·누락, 30분 전환·건너뛴 날짜·과거 한국 서머타임 회귀 검증.
@@ -72,18 +78,44 @@ npm run backend:catalog -- --download
 
 - `ASTUNE_ASTRO_API_URL`: Python API 주소. 기본 `http://127.0.0.1:8000`.
 - `ASTUNE_RULE_SOURCE=builtin`: 동봉된 기본 규칙으로 실행. 미리보기에는 DB가 필요하지 않습니다.
-- `ASTUNE_RULE_SOURCE=database`: DB의 최신 `PUBLISHED` 규칙 버전을 사용합니다. 게시된 버전이 없으면 `RULE_VERSION_NOT_FOUND`를 반환합니다.
+- `ASTUNE_RULE_SOURCE=database`: DB의 유일한 `PUBLISHED` 규칙 버전을 사용합니다. 게시된 버전이 없으면 `RULE_VERSION_NOT_FOUND`를 반환합니다.
 - `DATABASE_URL=file:./dev.db`: `prisma/dev.db` SQLite 파일.
 - `ASTUNE_ALLOW_DEV_AUTH=0`: 개발용 헤더 인증을 기본적으로 차단합니다.
 
 새 로컬 DB를 준비하려면 다음을 실행합니다. 기존 DB를 연결한 경우 먼저 백업하고 스키마 차이를 검토하세요.
 
 ```powershell
-npm run db:push
+npm run db:migrate
 npm run db:seed
 ```
 
-DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변경하고 Next.js를 재시작합니다. 현재 Prisma 어댑터는 기존 `constellationCode` 규칙과 `default` 공통 규칙을 사용합니다. 별별 규칙·점수 가중치는 메모리 규칙 엔진에서 지원하며, 현재 DB 스키마에는 해당 필드가 없습니다.
+기존 `db push`로 만든 v1.4 SQLite DB에는 마이그레이션 기록이 없습니다. 앱의 DB 쓰기를 중단하고 백업한 다음, 기존 스키마가 `prisma/migrations/20261013000000_initial/migration.sql`과 일치하는지 확인한 경우에만 다음을 한 번 실행합니다. 새 DB에서는 baseline 등록이 필요하지 않습니다.
+
+```powershell
+npx prisma migrate resolve --applied 20261013000000_initial
+npm run db:migrate
+npm run db:generate
+npm run db:seed
+```
+
+마이그레이션은 기존 규칙의 ID·문구를 보존하며 `constellationCode=default`를 `scopeType=global`로 전환합니다. 중복 게시 버전이 있다면 `publishedAt` 내림차순, ID 오름차순의 첫 버전을 유지하고 나머지는 `ARCHIVED`로 보관합니다. 범위와 우선순위 CHECK 및 단일 게시 부분 고유 인덱스는 SQL 마이그레이션에 있습니다. `npm run db:push`도 이제 마이그레이션을 실행하는 별칭입니다. 직접 `prisma db push`를 쓰면 이 제약이 보존되지 않을 수 있습니다.
+
+DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변경하고 Next.js를 재시작합니다. 범위는 `global`, `constellation`(3글자 성좌 코드), `star`(HIP ID)이며 별 → 성좌 → 전역 → 내장 fallback 순서로 섹션별 문구를 선택합니다. 같은 범위에서는 높은 `priority`가 먼저이고 동점은 규칙 ID 순입니다. 우선순위는 -32768~32767 정수이며 빈 섹션은 다음 규칙으로 넘어갑니다. `personalityText`도 DB에 저장됩니다.
+
+seed는 16개 성좌·공통·별 규칙을 초안으로 만들고 게시 버전이 없는 경우에만 게시합니다. 기존 게시 버전을 덮어쓰지 않으며 재실행해도 수정된 문구와 게시 이력을 보존합니다. 기존 게시 버전이 있으면 새 `2026Q4_v1` 초안을 확인한 뒤 관리자 publish API로 교체하세요. 게시는 이전 버전 보관과 감사 기록을 같은 트랜잭션으로 처리하며, 게시·보관된 버전에 규칙을 추가하는 요청은 409로 거절합니다.
+
+관리자 규칙 생성 `POST /api/v1/admin/rule-versions/{id}/rules`는 기존 평면 문구 필드와 아래 구조를 지원합니다. 존재하지 않는 범위 조합, 우선순위, 템플릿 변수와 빈 규칙은 400입니다.
+
+```json
+{
+  "title": "베텔게우스 성향",
+  "scopeType": "star",
+  "starId": 27989,
+  "priority": 200,
+  "keywords": ["몰입"],
+  "templates": { "personality": "{starName}의 상징에서 집중하는 성향을 돌아보세요." }
+}
+```
 
 리딩 저장 시 기존 컬럼을 유지하고 `interpretationMetaJson`에 전체 해석 결과·규칙 버전·점수·적용 규칙 ID를 함께 기록합니다. `persistence-mapper.ts`와 `prisma-rule-repository.example.ts`는 향후 별도 섹션/점수 테이블 설계용 예제이며 현재 DB 저장 경로에는 연결하지 않았습니다.
 
@@ -105,7 +137,7 @@ DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변�
 }
 ```
 
-`POST /api/v1/readings/preview`에 전달합니다. 해석 코드의 `birthDate` + `birthTimeLocal` 입력도 지원합니다. 최대 등급은 -2~5.5, 기본값은 2.0입니다. 5.5를 초과하면 카탈로그 범위 밖이므로 검증 오류를 반환합니다. 응답에는 기존 `zenithStar`, `reading`, `astronomyMeta`와 새 `interpretation`이 함께 있습니다.
+`POST /api/v1/readings/preview`에 전달합니다. 해석 코드의 `birthDate` + `birthTimeLocal` 입력도 지원합니다. 최대 등급은 -2~5.5, 기본값은 2.0입니다. 5.5를 초과하면 카탈로그 범위 밖이므로 검증 오류를 반환합니다. 공개 응답은 `{ success, data, meta: { requestId } }`이며 `data`에 `zenithStar`, `reading`, `astronomyMeta`, `interpretation`이 있습니다. 오류는 `{ success: false, error, meta }`입니다. 위치 POST·오류·내부 snake_case와의 차이는 [API 계약](docs/api.md)에 정리했습니다.
 
 시간은 UTC 오프셋 없는 현지시각으로 전달합니다. 서머타임으로 같은 시각이 두 번 발생하면 `dstFold: 0` 또는 `1`을 지정해야 합니다. 존재하지 않는 시각은 오류로 반환합니다. DE421의 날짜 범위 밖 요청도 명시적으로 거절합니다.
 
@@ -122,6 +154,8 @@ npm run typecheck
 npm test
 npm run backend:test
 npm run build
+# 두 서버 실행 후 실제 HTTP 검증
+npm run test:api
 ```
 
 Python 테스트는 로컬 DE421 파일이 필요하므로 먼저 `npm run backend:data`를 실행합니다. DB 규칙 테스트는 임시 SQLite 파일을 만들고 정리하며 개발 DB를 변경하지 않습니다. 프로덕션 빌드는 `npm run build`, 실행은 `npm start`이며 Python API도 별도로 실행해야 합니다.

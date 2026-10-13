@@ -4,13 +4,18 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 
 class LocationRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, json_schema_extra={"examples": [
+        {"query": "서울", "country_code": "KR", "limit": 3},
+        {"latitude": 37.5665, "longitude": 126.978},
+        {"latitude": 0, "longitude": -140, "timezone": "Etc/GMT+9"},
+    ]})
     query: str | None = Field(default=None, min_length=1, max_length=100)
     country_code: str | None = Field(default=None, pattern=r"^[A-Za-z]{2}$")
     latitude: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
     longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
     timezone: str | None = Field(default=None, min_length=1, max_length=80)
     allow_external: bool = False
+    limit: int = Field(default=5, ge=1, le=10, strict=True, description="후보 수. 좌표 직접 입력은 한 개를 반환합니다.")
 
     @field_validator("country_code")
     @classmethod

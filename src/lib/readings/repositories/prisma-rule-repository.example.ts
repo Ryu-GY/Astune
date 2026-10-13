@@ -4,7 +4,7 @@ import type { PublishedRuleBundle, RuleLookupInput, RuleRepository } from "./rul
 type RuleVersionRow = {
   id: string;
   versionCode: string;
-  status: "DRAFT" | "PUBLISHED" | "RETIRED";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   publishedAt: Date | null;
   note: string | null;
 };

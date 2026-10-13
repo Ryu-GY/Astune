@@ -1,22 +1,19 @@
 import { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/auth/session";
 import { listRuleVersions, createRuleVersion } from "@/server/services/admin-service";
-import { ok } from "@/lib/utils/http";
-import { toApiErrorResponse } from "@/lib/errors/to-api-error";
+import { handleApiRequest, ok } from "@/lib/utils/http";
 import { AppError } from "@/lib/errors/app-error";
 
 export async function GET(request: NextRequest) {
-  try {
-    requireAdmin(request);
+  return handleApiRequest(request, async () => {
+    await requireAdmin(request);
     return ok(await listRuleVersions());
-  } catch (error) {
-    return toApiErrorResponse(error);
-  }
+  });
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = requireAdmin(request);
+  return handleApiRequest(request, async () => {
+    const session = await requireAdmin(request);
     const body = (await request.json()) as { name?: string; description?: string };
 
     if (!body.name?.trim()) {
@@ -34,7 +31,5 @@ export async function POST(request: NextRequest) {
       }),
       201
     );
-  } catch (error) {
-    return toApiErrorResponse(error);
-  }
+  });
 }

@@ -1,44 +1,45 @@
-import { NextResponse } from "next/server";
+import { apiResponse } from "@/lib/utils/api-response";
 import { AppError } from "@/lib/errors/app-error";
 import { ZodError } from "zod";
 import { DomainError } from "@/lib/readings/errors";
 
 export function toApiErrorResponse(error: unknown) {
   if (error instanceof ZodError || error instanceof SyntaxError) {
-    return NextResponse.json({ ok: false, error: {
+    return apiResponse({ success: false, error: {
       code: "VALIDATION_ERROR", message: "입력값을 확인해 주세요.",
       details: error instanceof ZodError ? error.flatten() : null
-    } }, { status: 400 });
+    } }, 400);
   }
   if (error instanceof DomainError) {
-    return NextResponse.json({ ok: false, error: {
+    return apiResponse({ success: false, error: {
       code: error.code, message: error.message, details: error.details ?? null
-    } }, { status: error.status });
+    } }, error.status);
   }
   if (error instanceof AppError) {
-    return NextResponse.json(
+    return apiResponse(
       {
-        ok: false,
+        success: false,
         error: {
           code: error.code,
           message: error.message,
           details: error.details ?? null
         }
       },
-      { status: error.statusCode }
+      error.statusCode
     );
   }
 
   console.error(error);
 
-  return NextResponse.json(
+  return apiResponse(
     {
-      ok: false,
+      success: false,
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: "서버 내부 오류가 발생했습니다."
+        message: "서버 내부 오류가 발생했습니다.",
+        details: null
       }
     },
-    { status: 500 }
+    500
   );
 }

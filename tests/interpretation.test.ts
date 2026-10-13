@@ -7,6 +7,8 @@ import { previewReading, normalizePreviewInput } from "../src/server/services/pr
 import { requestRepresentativeStar } from "../src/lib/astronomy/core-client";
 import { toPersistenceRows } from "../src/lib/readings/persistence-mapper";
 import type { AstroResult } from "../src/lib/readings/types";
+import { interpretationRuleInputSchema } from "../src/lib/validation/rule";
+import { RuleBasedInterpretationEngine } from "../src/lib/readings/interpreter";
 
 const input = { birthDate: "1995-05-05", birthTimeLocal: "15:00:00", timezone: "Asia/Seoul", locationName: "Seoul", latitude: 37.5665, longitude: 126.978 };
 const astro: AstroResult = {
@@ -22,7 +24,7 @@ test("star, constellation, global rules merge per section with stable scores", a
   assert.equal(result.sections.length, 5);
   assert.equal(result.sections.find(s => s.type === "overview")?.sourceRuleId, "ir_star_betelgeuse");
   assert.equal(result.sections.find(s => s.type === "career")?.sourceRuleId, "ir_constellation_ori");
-  assert.equal(result.sections.find(s => s.type === "money")?.sourceRuleId, "ir_global_default");
+  assert.equal(result.sections.find(s => s.type === "money")?.sourceRuleId, "ir_constellation_ori");
   assert.equal(result.scores.length, 4);
   assert(result.scores.every(s => s.score >= 0 && s.score <= 100));
   assert(!result.sections.some(s => /\{\w+\}/.test(s.content)));
@@ -36,6 +38,34 @@ test("Rigel never receives the Betelgeuse star rule", async () => {
   assert(bundle);
   assert(!bundle.rules.some(rule => rule.id === "ir_star_betelgeuse"));
   assert(bundle.rules.some(rule => rule.id === "ir_constellation_ori"));
+});
+
+test("interpreter rejects inactive versions and excludes unrelated rules from text, scores and IDs", () => {
+  const engine = new RuleBasedInterpretationEngine();
+  for (const status of ["DRAFT", "ARCHIVED"] as const) {
+    assert.throws(() => engine.interpret({ astro, rules: DEFAULT_INTERPRETATION_RULES, version: { ...DEFAULT_RULE_VERSION, status } }), { code: "RULE_VERSION_NOT_FOUND" });
+  }
+  const expected = engine.interpret({ astro, rules: DEFAULT_INTERPRETATION_RULES, version: DEFAULT_RULE_VERSION });
+  const unrelated = { ...DEFAULT_INTERPRETATION_RULES[0], id: "other-version", ruleVersionId: "draft", priority: 32767, templates: { overview: "노출 금지" } };
+  const result = engine.interpret({ astro, rules: [unrelated, ...DEFAULT_INTERPRETATION_RULES].reverse(), version: DEFAULT_RULE_VERSION });
+  assert.deepEqual(result, expected);
+  const fallback = engine.interpret({ astro, rules: [], version: DEFAULT_RULE_VERSION });
+  assert(fallback.sections.every(section => section.sourceScope === "default" && section.content.length > 0));
+  assert.deepEqual(fallback.matchedRuleIds, []);
+});
+
+test("rule input accepts legacy fields and validates scopes, priorities and template variables", () => {
+  const legacy = interpretationRuleInputSchema.parse({ title: "공통 규칙", constellationCode: "default", generalText: "{starName} 총평" });
+  assert.equal(legacy.scopeType, "global");
+  assert.equal(legacy.constellationCode, null);
+  assert.equal(legacy.templates.overview, "{starName} 총평");
+  const valid = { title: "별 규칙", scopeType: "star", starId: 27989, templates: { personality: "{starName} 성향" } };
+  assert(interpretationRuleInputSchema.safeParse(valid).success);
+  for (const patch of [
+    { starId: null }, { starId: -1 }, { constellationCode: "Ori" }, { priority: 1.5 }, { priority: 32768 },
+    { templates: {} }, { templates: { overview: "   " } }, { templates: { overview: "{unknown} 잘못된 변수" } },
+    { templates: { unknown: "오타 섹션" } }, { keywords: ["a,b"] }
+  ]) assert(!interpretationRuleInputSchema.safeParse({ ...valid, ...patch }).success, JSON.stringify(patch));
 });
 
 test("missing constellation IDs do not match each other", async () => {

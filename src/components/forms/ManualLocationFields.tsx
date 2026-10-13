@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { MapCoordinates } from "./LocationMap";
 import styles from "./LocationMap.module.css";
+import type { ApiResponse } from "@/types/api";
 
 const LocationMap = dynamic(() => import("./LocationMap"), {
   ssr: false, loading: () => <p className="help" role="status">지도를 불러오는 중…</p>,
@@ -38,11 +39,11 @@ export function ManualLocationFields({ value, onChange, disabled = false }: {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(point), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
       });
-      const data = await response.json();
+      const data = await response.json() as ApiResponse<{ candidates: { timezone: string }[] }>;
       if (controller.signal.aborted) return;
-      const timezone = data.items?.[0]?.timezone;
+      const timezone = data.success ? data.data.candidates[0]?.timezone : undefined;
       if (!response.ok || typeof timezone !== "string" || !timezone) {
-        throw new Error(data.error?.message || "시간대를 찾지 못했어요. 아래 시간대를 직접 입력해 주세요.");
+        throw new Error(!data.success ? data.error.message : "시간대를 찾지 못했어요. 아래 시간대를 직접 입력해 주세요.");
       }
       onChange(previous => ({ ...previous, timezone }));
       setMessage(`위도·경도와 시간대(${timezone})를 입력했어요. 도시 이름은 자유롭게 수정할 수 있습니다.`);

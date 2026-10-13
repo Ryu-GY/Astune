@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 import type { ResolveLocationBody } from "@/lib/validation/location";
+import { upstreamHeaders } from "@/lib/utils/request-context";
 
 const responseSchema = z.object({
   success: z.literal(true),
@@ -21,9 +22,9 @@ export async function requestLocations(input: ResolveLocationBody, fetcher: type
   let response: Response;
   try {
     response = await fetcher(new URL("/api/v1/locations/resolve", process.env.ASTUNE_ASTRO_API_URL || "http://127.0.0.1:8000"), {
-      method: "POST", headers: {"Content-Type": "application/json"}, cache: "no-store",
+      method: "POST", headers: upstreamHeaders(), cache: "no-store",
       signal: AbortSignal.timeout(15000),
-      body: JSON.stringify({query: input.q, country_code: input.countryCode,
+      body: JSON.stringify({query: input.query, country_code: input.countryCode, limit: input.limit,
         latitude: input.latitude, longitude: input.longitude, timezone: input.timezone,
         allow_external: input.allowExternal}),
     });
@@ -47,9 +48,9 @@ export async function requestLocations(input: ResolveLocationBody, fetcher: type
     throw new AppError("위치 검색 응답 형식이 올바르지 않습니다.", {statusCode: 502, code: "LOCATION_INVALID_RESPONSE"});
   }
   const {data} = result.data;
-  return {ok: true, items: data.items.map(item => ({
-    name: item.city_name || "Coordinates", displayName: item.display_name,
-    country: item.country_code || "", latitude: item.latitude, longitude: item.longitude,
+  return {candidates: data.items.slice(0, input.limit).map(item => ({
+    displayName: item.display_name || item.city_name || "Coordinates",
+    countryCode: item.country_code, latitude: item.latitude, longitude: item.longitude,
     timezone: item.timezone, source: item.source, timezoneSource: item.timezone_source,
     attribution: item.attribution,
   })), cacheHit: data.cache_hit, manualInputHint: data.manual_input_hint};

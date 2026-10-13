@@ -33,6 +33,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title=settings.app_name,
+        description="Astune 내부 위치 해석·천문 계산 API입니다. snake_case 요청과 success/data 응답을 사용하며, 리딩 해석과 저장은 Next.js 공개 API가 담당합니다. X-Request-ID를 응답 헤더와 오류의 error.request_id에 반환합니다.",
         version="0.1.0",
         docs_url="/docs",
         redoc_url="/redoc",

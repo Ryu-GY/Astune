@@ -154,7 +154,7 @@ class LocationResolver:
             return matches
 
         items, hit = self.cache.get_or_create(key, resolve)
-        return LocationData(items=list(items), cache_hit=hit)
+        return LocationData(items=list(items[:request.limit]), cache_hit=hit)
 
     def close(self):
         self.client.close()
