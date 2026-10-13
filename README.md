@@ -2,9 +2,11 @@
 
 출생 현지시각·시간대·좌표로 대표 별을 계산하고 규칙 기반 해석을 만드는 Next.js + FastAPI 프로젝트입니다.
 
+운영 웹: [astune.vercel.app](https://astune.vercel.app). 웹은 Vercel, 계산 서버는 Render, PostgreSQL은 Neon에 배포하며 Git 푸시로 자동 배포하지 않습니다. [수동 배포·재현 절차](docs/deployment.md).
+
 ## 실행 준비
 
-Node.js 20.9 이상, Python 3.11 이상, uv가 필요합니다. 아래 명령은 프로젝트 루트의 PowerShell에서 실행합니다. 환경 파일이 이미 있다면 기존 값을 유지하세요.
+Node.js 24.x, Python 3.11 이상, uv가 필요합니다. 아래 명령은 프로젝트 루트의 PowerShell에서 실행합니다. 환경 파일이 이미 있다면 기존 값을 유지하세요.
 
 ```powershell
 if (!(Test-Path .env)) { Copy-Item .env.example .env }
@@ -74,6 +76,9 @@ npm run backend:catalog -- --download
 - T104 완료: zoneinfo UTC 변환, 서머타임 중복·누락, 30분 전환·건너뛴 날짜·과거 한국 서머타임 회귀 검증.
 - T105 완료: Skyfield apparent alt/az, 지평선·최대 등급 필터, 고도·밝기·HIP 순의 일관된 후보 선택.
 - T106 완료: 별 배열 계산, 성표·천체력 재사용, 단일 별 기준 결과 비교, 동시 요청·반복 I/O 검사. 로컬 실제 HTTP 400회에서 전체 미리보기 P95는 순차 33.14ms, 동시 4개 74.87ms로 목표 2,500ms 미만을 만족했습니다. 운영 환경 성능은 배포 후 별도 확인합니다. [측정 조건과 결과](docs/verification/t102-t106.md).
+- T801 완료: 새 Ubuntu 환경의 설치·천체력·테스트·빌드와 PostgreSQL Compose의 실제 SQLite 이관 검증. Windows Docker 호스트 오류는 검증 기록에 구분했습니다.
+- T802 완료: Vercel 웹 + Render 계산 서버 + Neon DB 수동 배포, 운영 Google OAuth와 내부 계산 인증 연결.
+- T803 완료: 공개 웹 오류·게스트 권한, Google 로그인·저장·재조회, 관리자 접근 차단, 운영 P95 성능 확인. [배포 검증 기록](docs/verification/t801-t803.md).
 - `outputs/`의 v1.4 개발 문서는 T101 착수 전 상태를 기록한 스냅샷입니다. 최신 구현 상태는 이 README와 테스트를 기준으로 확인합니다.
 
 ## 설정과 데이터베이스

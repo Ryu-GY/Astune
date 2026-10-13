@@ -30,8 +30,10 @@ function quantile(values, q) {
 async function call(target, index) {
   const start = performance.now();
   const response = await fetch(`${target.origin}/api/v1/readings/preview`, {
-    method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input(index,target.python)),
-    signal:AbortSignal.timeout(30000),
+    method:"POST",headers:{"Content-Type":"application/json",
+      ...(target.python && process.env.ASTUNE_ASTRO_API_KEY ? {"X-Astune-Internal-Key":process.env.ASTUNE_ASTRO_API_KEY} : {})},
+    body:JSON.stringify(input(index,target.python)),
+    signal:AbortSignal.timeout(120000),
   });
   const body = await response.json();
   const elapsed = performance.now()-start;
@@ -54,7 +56,8 @@ const targets = [
 ];
 const report = {
   measuredAt:new Date().toISOString(), environment:{platform:os.platform(),cpu:os.cpus()[0]?.model,node:process.version},
-  methodology:"Local real HTTP, worst supported magnitude 5.5, varied synthetic dates/coordinates, no result memoization. Nearest-rank P95; startup/preflight and external geocoding excluded.",
+  methodology:"Real HTTP, worst supported magnitude 5.5, varied synthetic dates/coordinates, no result memoization. Nearest-rank P95; startup/preflight and external geocoding excluded.",
+  targets:targets.map(({name,origin})=>({name,origin})),
   targetP95Ms:limit, profiles:[],
 };
 for (const target of targets) {

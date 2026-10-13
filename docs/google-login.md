@@ -50,4 +50,4 @@ npm run admin:grant -- your-google-email@example.com
 
 ## 4. 배포 설정
 
-실제 HTTPS 도메인으로 `BETTER_AUTH_URL`을 설정하고 Google 원본·콜백에도 같은 도메인을 추가합니다. 예: `https://your-domain.com/api/auth/callback/google`. 운영 환경에는 별도의 비밀값, 영속 DB, 마이그레이션 적용이 필요합니다. 발급 정보가 아직 없으므로 이번 구현에서 실제 Google 계정 선택부터 콜백까지의 로그인은 검증하지 않았습니다.
+운영 주소는 `https://astune.vercel.app`, 콜백은 `https://astune.vercel.app/api/auth/callback/google`입니다. `BETTER_AUTH_URL`을 같은 운영 원본으로 설정합니다. 운영 환경에는 별도의 세션 서명 비밀값과 Neon PostgreSQL을 연결했습니다. 2026-10-13 실제 Google 계정 선택 → HTTPS 콜백 → 리딩 저장 → 보관함 재조회까지 검증했습니다. Google 설정 변경 직후에는 반영 지연이 있을 수 있으므로 저장 후 새 로그인 요청으로 확인합니다.

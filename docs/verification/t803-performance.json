@@ -1,0 +1,67 @@
+{
+  "measuredAt": "2026-10-13T07:02:41.458Z",
+  "environment": {
+    "platform": "win32",
+    "cpu": "AMD Ryzen 5 5600 6-Core Processor              ",
+    "node": "v24.21.0"
+  },
+  "methodology": "Real HTTP, worst supported magnitude 5.5, varied synthetic dates/coordinates, no result memoization. Nearest-rank P95; startup/preflight and external geocoding excluded.",
+  "targets": [
+    {
+      "name": "FastAPI",
+      "origin": "https://astune-api.onrender.com"
+    },
+    {
+      "name": "Next.js + FastAPI + interpretation",
+      "origin": "https://astune.vercel.app"
+    }
+  ],
+  "targetP95Ms": 2500,
+  "profiles": [
+    {
+      "target": "FastAPI",
+      "concurrency": 1,
+      "requests": 20,
+      "firstRequestMs": 393.06,
+      "p50Ms": 117,
+      "p95Ms": 138.67,
+      "maxMs": 148.05,
+      "throughputPerSecond": 8.32,
+      "errors": 0
+    },
+    {
+      "target": "FastAPI",
+      "concurrency": 4,
+      "requests": 20,
+      "firstRequestMs": 393.06,
+      "p50Ms": 596.83,
+      "p95Ms": 758.38,
+      "maxMs": 851.72,
+      "throughputPerSecond": 7.27,
+      "errors": 0
+    },
+    {
+      "target": "Next.js + FastAPI + interpretation",
+      "concurrency": 1,
+      "requests": 20,
+      "firstRequestMs": 347.1,
+      "p50Ms": 255.57,
+      "p95Ms": 303.31,
+      "maxMs": 350.38,
+      "throughputPerSecond": 3.73,
+      "errors": 0
+    },
+    {
+      "target": "Next.js + FastAPI + interpretation",
+      "concurrency": 4,
+      "requests": 20,
+      "firstRequestMs": 347.1,
+      "p50Ms": 304.22,
+      "p95Ms": 605.47,
+      "maxMs": 1910.02,
+      "throughputPerSecond": 7.87,
+      "errors": 0
+    }
+  ],
+  "passed": true
+}
