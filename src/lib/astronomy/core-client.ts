@@ -5,6 +5,7 @@ import type { AstroResult } from "@/lib/readings/types";
 import { recordCalculation, traceStage } from "@/lib/utils/request-context";
 import { astronomyTransport } from "./transport";
 import { publicError, errorPolicy } from "@/lib/errors/error-policy";
+import { constellationNames } from "./constellations";
 
 const coreResponseSchema = z.object({
   success: z.literal(true),
@@ -66,6 +67,7 @@ async function calculate(input: PreviewReadingInput, fetcher: typeof fetch): Pro
     throw new AppError("천문 계산 결과를 읽을 수 없습니다.", { statusCode: 502, code: "ASTRO_INVALID_RESPONSE" });
   }
   const { selected_star: star, selected_constellation: constellation, metrics, astronomy_meta: meta } = parsed.data.data;
+  const names = constellationNames(constellation.code);
   const astronomyMeta = {
     sourceLabel: meta.source_label, catalogVersion: meta.catalog_version, engineName: meta.engine_name,
     candidateCount: meta.candidate_count, calculatedAtUtc: meta.calculated_at_utc
@@ -74,7 +76,7 @@ async function calculate(input: PreviewReadingInput, fetcher: typeof fetch): Pro
   return {
     astro: {
       selectedStar: { id: star.id, displayName: star.display_name, magnitude: star.magnitude },
-      selectedConstellation: { code: constellation.code || "Unknown", nameKo: constellation.name_ko || constellation.name_en || constellation.code || "미상", nameEn: constellation.name_en || undefined },
+      selectedConstellation: { code: constellation.code || "Unknown", nameKo: constellation.name_ko || names?.nameKo || constellation.name_en || constellation.code || "미상", nameEn: constellation.name_en || names?.nameEn },
       metrics: { altitudeDeg: metrics.altitude_deg, azimuthDeg: metrics.azimuth_deg, zenithDistanceDeg: metrics.zenith_distance_deg },
       astronomyMeta
     }, astronomyMeta

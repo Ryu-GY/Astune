@@ -13,8 +13,8 @@ import timeStyles from "@/components/reading/BirthTimeNotice.module.css";
 type City = { name: string; country: string; timezone: string; latitude: number; longitude: number; aliases?: string[] };
 
 export function PreviewReadingForm({ cities }: { cities: City[] }) {
-  const [birthDate, setBirthDate] = useState("1995-05-05");
-  const [birthTime, setBirthTime] = useState("15:00");
+  const [birthDate, setBirthDate] = useState("2000-01-01");
+  const [birthTime, setBirthTime] = useState("00:00");
   const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
   const [cityName, setCityName] = useState("Seoul");
   const [manualCity, setManualCity] = useState({ locationName: "", timezone: "Asia/Seoul", latitude: "37.5665", longitude: "126.978" });

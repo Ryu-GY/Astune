@@ -1,0 +1,446 @@
+{
+  "tool": "built-in image_gen",
+  "basePrompt": "Use case: illustration-story. Asset type: one finished square constellation illustration for Astune, a refined Korean astronomy reading website. Style/medium: exquisite antique celestial atlas engraving, delicate hand-etched forest-green ink linework and restrained muted antique-gold watercolor accents on warm ivory paper (#f7f5ee). Composition: one coherent centered vignette, full subject visible, generous clean margin on all four sides, square 1024x1024. Subtle scattered small gold stars create a poetic celestial atmosphere; no connecting star lines and no claims of accurate star positions. Elegant, calm, delicate and legible when displayed at 300px. Background paper extends to all edges. No text, no letters, no titles, no labels, no frame, no border, no compass rose unless it is the named subject, no zodiac wheel, no logos, no watermark. One individual constellation illustration, never a collage or contact sheet.",
+  "entries": [
+    {
+      "code": "And",
+      "name": "Andromeda",
+      "subject": "A serene fully clothed mythological princess in flowing classical robes, arms open, two delicate loose symbolic chains hanging from her wrists; dignified and free, never distressed."
+    },
+    {
+      "code": "Ant",
+      "name": "Antlia",
+      "subject": "A finely detailed antique scientific air pump with a glass bell jar, brass piston and hand crank on a small wooden base."
+    },
+    {
+      "code": "Aps",
+      "name": "Apus",
+      "subject": "A graceful bird of paradise in flight, with a long flowing ornamental tail and delicate plumes."
+    },
+    {
+      "code": "Aqr",
+      "name": "Aquarius",
+      "subject": "A classical robed water bearer carefully tipping a large ornate amphora, an elegant stream of water curling below."
+    },
+    {
+      "code": "Aql",
+      "name": "Aquila",
+      "subject": "A majestic eagle soaring with both wings fully spread, precise feather etching."
+    },
+    {
+      "code": "Ara",
+      "name": "Ara",
+      "subject": "An antique stone altar with a small elegant flame, curling smoke and carved classical details."
+    },
+    {
+      "code": "Ari",
+      "name": "Aries",
+      "subject": "A strong gentle ram with large spiral horns, standing in three-quarter view."
+    },
+    {
+      "code": "Aur",
+      "name": "Auriga",
+      "subject": "A classical charioteer, a robed human figure gently holding a small goat at the shoulder, with a fine antique chariot wheel motif."
+    },
+    {
+      "code": "Boo",
+      "name": "Boötes",
+      "subject": "A classical herdsman in flowing robes holding a long shepherd's staff, standing with calm protective dignity."
+    },
+    {
+      "code": "Cae",
+      "name": "Caelum",
+      "subject": "A sculptor's fine steel chisel and small engraving hammer crossing beside a small piece of carved marble."
+    },
+    {
+      "code": "Cam",
+      "name": "Camelopardalis",
+      "subject": "One elegant full-bodied giraffe with long neck and distinctive spots, gracefully standing."
+    },
+    {
+      "code": "Cnc",
+      "name": "Cancer",
+      "subject": "A detailed crab with two curved claws and an intact symmetrical shell, viewed slightly from above."
+    },
+    {
+      "code": "CVn",
+      "name": "Canes Venatici",
+      "subject": "Two alert graceful hunting hounds with slender bodies and expressive ears, standing together facing slightly different directions."
+    },
+    {
+      "code": "CMa",
+      "name": "Canis Major",
+      "subject": "One large dignified celestial hound, full body in a gentle running pose, a small golden star near its chest."
+    },
+    {
+      "code": "CMi",
+      "name": "Canis Minor",
+      "subject": "One small elegant celestial hound, compact and nimble, standing alert with uplifted face."
+    },
+    {
+      "code": "Cap",
+      "name": "Capricornus",
+      "subject": "A mythical sea-goat with a goat's horned front half and a gracefully curled fish tail, a clear seamless fantasy creature."
+    },
+    {
+      "code": "Car",
+      "name": "Carina",
+      "subject": "The beautifully carved keel and lower hull of an ancient sailing vessel, a cutaway-like elegant nautical vignette without sails."
+    },
+    {
+      "code": "Cas",
+      "name": "Cassiopeia",
+      "subject": "A fully clothed classical queen seated on an ornate high-backed throne, gracefully holding a small mirror, draped robe."
+    },
+    {
+      "code": "Cen",
+      "name": "Centaurus",
+      "subject": "A noble centaur with a human male torso in a simple draped tunic and horse body, holding a staff; no bow or violence."
+    },
+    {
+      "code": "Cep",
+      "name": "Cepheus",
+      "subject": "A dignified classical king in flowing robes, wearing a delicate crown and holding a slender royal sceptre."
+    },
+    {
+      "code": "Cet",
+      "name": "Cetus",
+      "subject": "A mythical sea whale with a long flowing tail and elegant fins, rising gently above decorative curls of water."
+    },
+    {
+      "code": "Cha",
+      "name": "Chamaeleon",
+      "subject": "A full-bodied chameleon with a coiled tail and intricate textured skin, perched on a slender curling branch."
+    },
+    {
+      "code": "Cir",
+      "name": "Circinus",
+      "subject": "An antique brass drafting compass with two long hinged legs open at a measured angle, precise engraved metal."
+    },
+    {
+      "code": "Col",
+      "name": "Columba",
+      "subject": "A gentle dove in flight carrying a small olive branch, softly spread wings."
+    },
+    {
+      "code": "Com",
+      "name": "Coma Berenices",
+      "subject": "A graceful lock of long flowing braided hair, tied with a fine ribbon and accented by tiny gold stars; no severed head or face."
+    },
+    {
+      "code": "CrA",
+      "name": "Corona Australis",
+      "subject": "A small delicate southern crown, a crescent-shaped wreath of antique gold leaves and understated gems."
+    },
+    {
+      "code": "CrB",
+      "name": "Corona Borealis",
+      "subject": "A regal semicircular northern crown with seven delicate golden points and restrained leaf ornament, visually distinct from a full circle."
+    },
+    {
+      "code": "Crv",
+      "name": "Corvus",
+      "subject": "An intelligent raven standing in profile with detailed dark feathers and a gently curved beak."
+    },
+    {
+      "code": "Crt",
+      "name": "Crater",
+      "subject": "An elegant ancient Greek two-handled cup on a slender pedestal, decorated with delicate etched bands."
+    },
+    {
+      "code": "Cru",
+      "name": "Crux",
+      "subject": "Four prominent golden stars arranged in the recognizable Southern Cross silhouette with one smaller fifth star nearby, delicate cloud wisps; no Christian crucifix or text."
+    },
+    {
+      "code": "Cyg",
+      "name": "Cygnus",
+      "subject": "A graceful swan flying with its long neck extended and expansive curved wings, complete body."
+    },
+    {
+      "code": "Del",
+      "name": "Delphinus",
+      "subject": "A playful dolphin leaping in a gentle arc above a tiny swirl of etched water."
+    },
+    {
+      "code": "Dor",
+      "name": "Dorado",
+      "subject": "One long elegant dolphinfish or mahi-mahi with a tall dorsal fin and forked tail, swimming in profile."
+    },
+    {
+      "code": "Dra",
+      "name": "Draco",
+      "subject": "A long sinuous classical celestial dragon curled into an elegant S shape, fine scales, calm expression, no fire."
+    },
+    {
+      "code": "Equ",
+      "name": "Equuleus",
+      "subject": "A small young horse, a gentle foal with a short mane, full body standing and lifting one front hoof."
+    },
+    {
+      "code": "Eri",
+      "name": "Eridanus",
+      "subject": "A winding celestial river forming an elegant S-shaped flowing ribbon, light waves and a few graceful reeds, no map or labels."
+    },
+    {
+      "code": "For",
+      "name": "Fornax",
+      "subject": "An antique scientific laboratory furnace with a small glowing opening, arched masonry and a simple alchemical vessel beside it."
+    },
+    {
+      "code": "Gem",
+      "name": "Gemini",
+      "subject": "Two fully clothed classical twin siblings standing side by side in draped robes, mirroring each other's relaxed pose."
+    },
+    {
+      "code": "Gru",
+      "name": "Grus",
+      "subject": "A graceful crane with very long legs and a slender neck, standing on one leg with wings partly unfurled."
+    },
+    {
+      "code": "Her",
+      "name": "Hercules",
+      "subject": "A classical hero in a draped tunic with a lion-skin cloak and simple wooden club resting beside him, calm strength, no violence."
+    },
+    {
+      "code": "Hor",
+      "name": "Horologium",
+      "subject": "An ornate antique pendulum clock in a slender carved wooden case, delicate hands and a plain dial with no numerals or lettering."
+    },
+    {
+      "code": "Hya",
+      "name": "Hydra",
+      "subject": "One long water serpent undulating in several elegant waves, a single small head, detailed scales and restrained water curls."
+    },
+    {
+      "code": "Hyi",
+      "name": "Hydrus",
+      "subject": "One smaller slender water snake coiled loosely with its head uplifted, a compact graceful silhouette and tiny water ripple."
+    },
+    {
+      "code": "Ind",
+      "name": "Indus",
+      "subject": "A respectful dignified anonymous human observer in simple flowing garments, looking up at the stars and holding a slender walking staff; no stereotyped headdress, no caricature."
+    },
+    {
+      "code": "Lac",
+      "name": "Lacerta",
+      "subject": "A detailed small lizard in a gentle curved pose, all four feet visible, a long slender tail."
+    },
+    {
+      "code": "Leo",
+      "name": "Leo",
+      "subject": "A majestic full-bodied male lion with a flowing detailed mane, standing in a calm regal pose."
+    },
+    {
+      "code": "LMi",
+      "name": "Leo Minor",
+      "subject": "One small young lion with a slight mane, full body sitting in an alert gentle pose, distinct from an adult lion."
+    },
+    {
+      "code": "Lep",
+      "name": "Lepus",
+      "subject": "An alert hare with very long ears, poised in a light leaping pose, fine etched fur."
+    },
+    {
+      "code": "Lib",
+      "name": "Libra",
+      "subject": "A balanced antique beam scale with two delicate suspended weighing pans, elegant gold metal and symmetrical chains."
+    },
+    {
+      "code": "Lup",
+      "name": "Lupus",
+      "subject": "A graceful full-bodied wolf standing in profile, its muzzle raised toward the sky, precise etched fur."
+    },
+    {
+      "code": "Lyn",
+      "name": "Lynx",
+      "subject": "A full-bodied lynx with tufted ears, a short tail and spotted fur, sitting alert."
+    },
+    {
+      "code": "Lyr",
+      "name": "Lyra",
+      "subject": "An ornate ancient Greek lyre with seven fine strings, curved wooden arms, delicate antique gold floral inlay."
+    },
+    {
+      "code": "Men",
+      "name": "Mensa",
+      "subject": "A broad flat-topped Table Mountain silhouette rising above delicate cloud wisps, rock strata finely engraved, no furniture."
+    },
+    {
+      "code": "Mic",
+      "name": "Microscopium",
+      "subject": "An antique brass optical microscope with a single eyepiece, focus knobs and curved stand on a small wooden base."
+    },
+    {
+      "code": "Mon",
+      "name": "Monoceros",
+      "subject": "A graceful full-bodied unicorn with one long spiral horn and a flowing mane, standing in profile."
+    },
+    {
+      "code": "Mus",
+      "name": "Musca",
+      "subject": "A delicately detailed housefly with two translucent veined wings, six slender legs, rendered as an elegant scientific engraving."
+    },
+    {
+      "code": "Nor",
+      "name": "Norma",
+      "subject": "An antique carpenter's right-angle square and straightedge arranged in a clean geometric vignette, brass and wood, no compass."
+    },
+    {
+      "code": "Oct",
+      "name": "Octans",
+      "subject": "An antique brass octant navigational instrument, one-eighth-circle arc, sighting arm and small mirrors; no numerals."
+    },
+    {
+      "code": "Oph",
+      "name": "Ophiuchus",
+      "subject": "A fully clothed classical serpent bearer in a flowing tunic gently holding a long snake that curves around both arms; serene, no violence."
+    },
+    {
+      "code": "Ori",
+      "name": "Orion",
+      "subject": "A fully clothed classical hunter with a draped tunic, holding a raised wooden club and small shield, three small gold stars at his belt; no attack or gore."
+    },
+    {
+      "code": "Pav",
+      "name": "Pavo",
+      "subject": "A majestic peacock with its entire patterned tail fanned wide, delicate green-ink and gold eye feathers."
+    },
+    {
+      "code": "Peg",
+      "name": "Pegasus",
+      "subject": "A graceful full-bodied winged horse in light flight, both feathered wings visible and flowing mane."
+    },
+    {
+      "code": "Per",
+      "name": "Perseus",
+      "subject": "A fully clothed classical hero in a flowing cape with winged sandals, holding a polished round shield and a lowered sword; no severed head, no violence."
+    },
+    {
+      "code": "Phe",
+      "name": "Phoenix",
+      "subject": "A graceful mythical phoenix rising with long flowing tail feathers, tiny restrained golden flame-like feather accents, no large fire."
+    },
+    {
+      "code": "Pic",
+      "name": "Pictor",
+      "subject": "An antique painter's easel holding a blank small canvas, with a wooden palette and three fine brushes arranged beside it."
+    },
+    {
+      "code": "Psc",
+      "name": "Pisces",
+      "subject": "Two elegant fish swimming in opposite curved directions, joined by a fine flowing ribbon, balanced circular composition."
+    },
+    {
+      "code": "PsA",
+      "name": "Piscis Austrinus",
+      "subject": "One elegant southern fish with a large graceful tail and detailed scales, swimming horizontally beneath a small gold star."
+    },
+    {
+      "code": "Pup",
+      "name": "Puppis",
+      "subject": "The ornate raised stern of an ancient sailing ship with carved railing and a rudder, small nautical vignette, no entire ship."
+    },
+    {
+      "code": "Pyx",
+      "name": "Pyxis",
+      "subject": "An antique maritime magnetic compass in a circular brass case, a fine needle and a plain compass rose with no letters."
+    },
+    {
+      "code": "Ret",
+      "name": "Reticulum",
+      "subject": "An antique astronomical reticle: a delicate circular brass frame with a precise fine mesh and crosshair threads, scientific optical instrument, no spiderweb."
+    },
+    {
+      "code": "Sge",
+      "name": "Sagitta",
+      "subject": "A single graceful ancient arrow with a fine pointed metal tip and feather fletching, shown diagonally, no bow."
+    },
+    {
+      "code": "Sgr",
+      "name": "Sagittarius",
+      "subject": "A classical centaur archer in a simple draped tunic, horse body and human upper body drawing a bow upward toward empty sky, no target or violence."
+    },
+    {
+      "code": "Sco",
+      "name": "Scorpius",
+      "subject": "A finely detailed scorpion with two open pincers and a long elegantly curved segmented tail, seen from above."
+    },
+    {
+      "code": "Scl",
+      "name": "Sculptor",
+      "subject": "A classical sculptor's marble bust on a short pedestal, with a small chisel and wooden mallet beside it, no living sculptor."
+    },
+    {
+      "code": "Sct",
+      "name": "Scutum",
+      "subject": "An ornate antique shield with a simple central star ornament, delicate leaf engraving and curved edges."
+    },
+    {
+      "code": "Ser",
+      "name": "Serpens",
+      "subject": "A single long land serpent coiled vertically in a flowing S shape with its head alert, no human figure, no water."
+    },
+    {
+      "code": "Sex",
+      "name": "Sextans",
+      "subject": "An antique brass sextant navigational instrument with a one-sixth-circle arc, radial arm, mirrors and a small telescope; no numerals."
+    },
+    {
+      "code": "Tau",
+      "name": "Taurus",
+      "subject": "A powerful full-bodied bull with long curved horns, standing in a grounded calm pose, fine etched fur."
+    },
+    {
+      "code": "Tel",
+      "name": "Telescopium",
+      "subject": "An antique brass refracting telescope on a fine wooden tripod, angled upward, elegant scientific details."
+    },
+    {
+      "code": "Tri",
+      "name": "Triangulum",
+      "subject": "Three luminous antique-gold stars forming a slim upright celestial triangle, with faint elegant ornamental cloud wisps; no solid lines or text."
+    },
+    {
+      "code": "TrA",
+      "name": "Triangulum Australe",
+      "subject": "Three luminous golden stars forming a broad nearly equilateral celestial triangle, with faint southern cloud wisps; no solid lines or text."
+    },
+    {
+      "code": "Tuc",
+      "name": "Tucana",
+      "subject": "A toucan with a large distinctive curved beak, perched on a small branch, detailed etched plumage."
+    },
+    {
+      "code": "UMa",
+      "name": "Ursa Major",
+      "subject": "A large full-bodied bear walking slowly in profile, thick etched fur and a noble gentle expression."
+    },
+    {
+      "code": "UMi",
+      "name": "Ursa Minor",
+      "subject": "A small bear cub standing alert with one paw slightly lifted, soft etched fur and a small gold guiding star above."
+    },
+    {
+      "code": "Vel",
+      "name": "Vela",
+      "subject": "Two billowing sails on an antique ship's mast with delicate ropes and a small spar, focus on the sails without a full ship hull."
+    },
+    {
+      "code": "Vir",
+      "name": "Virgo",
+      "subject": "A fully clothed classical maiden in flowing robes holding a sheaf of wheat, graceful calm expression."
+    },
+    {
+      "code": "Vol",
+      "name": "Volans",
+      "subject": "A flying fish leaping diagonally with its long wing-like pectoral fins fully spread, detailed scales."
+    },
+    {
+      "code": "Vul",
+      "name": "Vulpecula",
+      "subject": "A small fox with a full bushy tail, standing and looking back gracefully, precise etched fur."
+    }
+  ]
+}

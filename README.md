@@ -50,6 +50,10 @@ npm run dev
 
 대표 별은 밝기 제한을 만족하고 지평선 위에 있는 카탈로그 별 중 고도가 가장 높은 별입니다. Hipparcos 원본 118,218개 중 Vmag ≤ 5.5인 2,851개에서 좌표 누락 3개를 제외한 2,848개를 사용합니다. 좌표의 J1991.25 기준 시점, 고유운동, 유효한 시차를 Skyfield 계산에 반영합니다. 해석과 점수는 상징적 규칙으로 생성합니다.
 
+결과 카드에는 대표 별이 속한 별자리의 한글·학명과 88개 별자리별 상징 일러스트를 표시합니다. 그림은 실제 별 배치도가 아니며, 생성 프롬프트는 [일러스트 제작 기록](docs/verification/constellation-art-prompts.json), 웹용 이미지 파일은 `public/images/constellations/`에 있습니다. 첫 입력 날짜·시간은 2000년 1월 1일 00:00입니다.
+
+`그날의 하늘 자세히 보기`는 무료 [Stellarium Web](https://stellarium-web.org/)을 새 탭으로 엽니다. 계산 서버가 확정한 UTC 시각·위경도·HIP 별 번호로 연결하므로 서머타임 중복 시각과 시간 모름의 현지 낮 12시 기준이 유지됩니다. 이름이나 리딩 본문은 링크에 넣지 않습니다. 낮에는 외부 지도의 Atmosphere를 끄면 별을 볼 수 있습니다. [공식 링크 처리 코드](https://github.com/Stellarium/stellarium-web-engine/blob/master/apps/web-frontend/src/App.vue)를 기준으로 구현했습니다.
+
 카탈로그는 Git에 포함되어 있어 앱 실행 시 별 목록 다운로드가 필요하지 않습니다. 재생성이 필요한 경우에만 다음을 실행합니다.
 
 ```powershell
