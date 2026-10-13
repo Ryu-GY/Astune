@@ -10,5 +10,6 @@ astune-backend
 *.astune-backup.json
 docs
 tests
+scripts/verify-postgres-transfer.ts
 compose*.yml
 Dockerfile*
