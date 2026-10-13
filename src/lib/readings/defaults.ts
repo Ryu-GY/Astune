@@ -18,15 +18,15 @@ export const SECTION_TITLES: Record<SectionType, string> = {
 
 export const DEFAULT_TEMPLATES: Record<SectionType, string> = {
   overview:
-    "{starName}을 중심으로 {constellationNameKo}의 흐름이 선명하게 드러납니다. 이번 리딩은 고도 {altitudeDeg}°, 천정 거리 {zenithDistanceDeg}° 기준으로 해석했습니다.",
+    "계산된 별은 {starName}(HIP {starId})입니다. 이 별의 개별 해설은 아직 준비되지 않았습니다. 현재 고유 해설은 기본 계산 대상 93개 별에 제공됩니다.",
   personality:
-    "기본 성향은 빠른 판단과 또렷한 자기표현에 가깝습니다. 감정 반응이 앞설 수 있지만 중심을 잡으면 큰 추진력으로 연결됩니다.",
+    "{starName}의 성향 해설이 아직 준비되지 않았습니다.",
   love:
-    "관계에서는 솔직함과 선명한 호감 표현이 강점입니다. 다만 템포가 너무 빨라지지 않도록 조절하면 안정감이 높아집니다.",
+    "{starName}의 연애 해설이 아직 준비되지 않았습니다.",
   career:
-    "{focusKeywords} 성향이 일과 커리어에서 강점으로 작동합니다. 방향을 먼저 잡고 움직이는 역할에서 성과가 잘 납니다.",
+    "{starName}의 일과 커리어 해설이 아직 준비되지 않았습니다.",
   money:
-    "재물 흐름은 큰 한방보다 관리 습관이 성패를 가릅니다. 기준을 정하고 꾸준히 쌓는 방식이 유리합니다.",
+    "{starName}의 재물 해설이 아직 준비되지 않았습니다.",
 };
 
 export const SCORE_DIMENSIONS: ScoreDimension[] = ["personality", "love", "career", "money"];

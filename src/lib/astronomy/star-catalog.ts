@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { CatalogStar } from "@/lib/astronomy/types";
 import catalogMetadata from "../../../data/astro/bright-stars.meta.json";
+import { DEFAULT_READING_MAX_MAGNITUDE } from "@/lib/readings/coverage";
 
 let cachedCatalog: CatalogStar[] | null = null;
 
@@ -20,7 +21,7 @@ function loadCatalog(): CatalogStar[] {
   return cachedCatalog;
 }
 
-export function getBrightStarCatalog(maxMagnitude = 2) {
+export function getBrightStarCatalog(maxMagnitude = DEFAULT_READING_MAX_MAGNITUDE) {
   return loadCatalog()
     .filter((star) => star.magnitude <= maxMagnitude)
     .sort((a, b) => a.magnitude - b.magnitude);

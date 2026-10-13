@@ -22,7 +22,7 @@ class PreviewRequest(BaseModel):
     longitude: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False, strict=True)
     timezone: str | None = Field(default=None, min_length=1, max_length=80)
     dst_fold: int | None = Field(default=None, ge=0, le=1, strict=True)
-    max_magnitude: float = Field(default=2.0, ge=-2, le=5.5, strict=True)
+    max_magnitude: float = Field(default=2.5, ge=-2, le=5.5, strict=True)
 
     @field_validator("birth_date", mode="before")
     @classmethod

@@ -29,7 +29,7 @@ function resolveTemplateForSection(
   grouped: Record<ScopeType, InterpretationRule[]>,
   sectionType: SectionType,
 ): { template: string; sourceRuleId: string | null; sourceScope: ScopeType | "default" } {
-  const scopeOrder: ScopeType[] = ["star", "constellation", "global"];
+  const scopeOrder: ScopeType[] = ["star", "global"];
 
   for (const scope of scopeOrder) {
     const matched = grouped[scope].find((rule) => {

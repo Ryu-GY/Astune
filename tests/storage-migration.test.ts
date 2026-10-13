@@ -84,16 +84,3 @@ test("T503-T504 upsert records before and after atomically and prevents moving a
   await assert.rejects(createRuleVersion({ name: "Rollback", createdById: "missing-user" }, db.prisma));
   assert.equal(await db.prisma.ruleVersion.count(), 2);
 });
-
-test("detailed builtin sections provide three paragraphs with no unresolved variables after rendering", async () => {
-  const { RuleBasedInterpretationEngine } = await import("../src/lib/readings/interpreter");
-  const { DEFAULT_RULE_VERSION } = await import("../src/lib/readings/fixtures/default-rules");
-  for (const code of [...DEFAULT_INTERPRETATION_RULES.filter(rule => rule.scopeType === "constellation").map(rule => rule.constellationCode!), "Oct"]) {
-    const result = new RuleBasedInterpretationEngine().interpret({ version: DEFAULT_RULE_VERSION, rules: DEFAULT_INTERPRETATION_RULES, astro: {
-      selectedStar: { id: 24608, displayName: "Capella", magnitude: 0.08 }, selectedConstellation: { code, nameKo: code },
-      metrics: { altitudeDeg: 81.564, azimuthDeg: 170, zenithDistanceDeg: 8.436 },
-    } });
-    assert.equal(result.sections.length, 5);
-    for (const section of result.sections) { assert(section.content.length >= 400, `${code}/${section.type}`); assert.equal(section.content.split(/\n\s*\n/).length, 3); assert(!/[{}]/.test(section.content)); }
-  }
-});

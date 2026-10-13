@@ -13,7 +13,6 @@ export class PrismaRuleRepository implements RuleRepository {
         where: { OR: [
           { scopeType: "global" },
           { scopeType: "star", starId: input.starId },
-          ...(input.constellationCode ? [{ scopeType: "constellation" as const, constellationCode: input.constellationCode }] : [])
         ] },
         orderBy: [{ priority: "desc" }, { id: "asc" }]
       } },

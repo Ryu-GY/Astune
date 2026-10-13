@@ -20,7 +20,7 @@ test("published database rules drive interpretation; draft versions do not", asy
     const user = await prisma.user.create({ data: { email: "rules-test@astune.local", role: "ADMIN" } });
     const version = await prisma.ruleVersion.create({ data: {
       name: "published-test", status: "PUBLISHED", publishedAt: new Date(), createdById: user.id,
-      rules: { create: { constellationCode: "Ori", title: "Database title", keywordsCsv: "몰입", generalText: "게시된 {starName} 해석", loveText: "DB love", careerText: "DB career", moneyText: "DB money" } }
+      rules: { create: { scopeType: "star", starId: 27989, title: "Database title", keywordsCsv: "몰입", generalText: "게시된 {starName} 해석", loveText: "DB love", careerText: "DB career", moneyText: "DB money" } }
     } });
     await prisma.ruleVersion.create({ data: { name: "draft-test", createdById: user.id, status: "DRAFT" } });
     const result = await new PreviewReadingService(new PrismaRuleRepository(prisma)).generate({

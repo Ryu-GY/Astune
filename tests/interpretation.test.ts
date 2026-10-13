@@ -19,12 +19,10 @@ const astro: AstroResult = {
 };
 const repository = new InMemoryRuleRepository(DEFAULT_RULE_VERSION, DEFAULT_INTERPRETATION_RULES);
 
-test("star, constellation, global rules merge per section with stable scores", async () => {
+test("all five sections come from the selected star with stable scores", async () => {
   const result = await new PreviewReadingService(repository).generate({ input, astro });
   assert.equal(result.sections.length, 5);
-  assert.equal(result.sections.find(s => s.type === "overview")?.sourceRuleId, "ir_star_betelgeuse_v2");
-  assert.equal(result.sections.find(s => s.type === "career")?.sourceRuleId, "ir_constellation_ori_v2");
-  assert.equal(result.sections.find(s => s.type === "money")?.sourceRuleId, "ir_constellation_ori_v2");
+  assert(result.sections.every(s => s.sourceRuleId === "ir_star_27989_v3" && s.sourceScope === "star"));
   assert.equal(result.scores.length, 4);
   assert(result.scores.every(s => s.score >= 0 && s.score <= 100));
   assert(!result.sections.some(s => /\{\w+\}/.test(s.content)));
@@ -36,8 +34,9 @@ test("star, constellation, global rules merge per section with stable scores", a
 test("Rigel never receives the Betelgeuse star rule", async () => {
   const bundle = await repository.getPublishedRuleBundle({ starId: 24436, constellationCode: "Ori" });
   assert(bundle);
-  assert(!bundle.rules.some(rule => rule.id === "ir_star_betelgeuse_v2"));
-  assert(bundle.rules.some(rule => rule.id === "ir_constellation_ori_v2"));
+  assert(!bundle.rules.some(rule => rule.starId === 27989));
+  assert(bundle.rules.some(rule => rule.starId === 24436));
+  assert(!bundle.rules.some(rule => rule.scopeType === "constellation"));
 });
 
 test("interpreter rejects inactive versions and excludes unrelated rules from text, scores and IDs", () => {
@@ -91,6 +90,7 @@ test("invalid dates, offsets, coordinates and timezones are rejected", () => {
 });
 
 test("preview magnitude cannot exceed the shipped Hipparcos coverage", () => {
+  assert.equal(normalizePreviewInput(input).maxMagnitude, 2.5);
   assert.equal(normalizePreviewInput({ ...input, maxMagnitude: 5.5 }).maxMagnitude, 5.5);
   assert.throws(() => normalizePreviewInput({ ...input, maxMagnitude: 5.6 }));
   assert.throws(() => normalizePreviewInput({ ...input, maxMagnitude: -2.1 }));

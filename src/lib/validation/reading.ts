@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { UNKNOWN_BIRTH_TIME_REFERENCE } from "@/lib/readings/birth-time";
 import { birthDateIssue } from "./birth-date-policy";
 import { errorPolicy } from "@/lib/errors/error-policy";
+import { DEFAULT_READING_MAX_MAGNITUDE } from "@/lib/readings/coverage";
 
 const readingFields = z.object({
   name: z.string().trim().min(1).max(50).optional(),
@@ -13,7 +14,7 @@ const readingFields = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   locationName: z.string().trim().max(120).optional(),
-  maxMagnitude: z.number().min(-2).max(5.5).optional().default(2),
+  maxMagnitude: z.number().min(-2).max(5.5).optional().default(DEFAULT_READING_MAX_MAGNITUDE),
   dstFold: z.union([z.literal(0), z.literal(1)]).optional()
 });
 

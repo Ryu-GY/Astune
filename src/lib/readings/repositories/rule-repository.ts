@@ -18,6 +18,7 @@ export interface RuleRepository {
 export function matchesRule(rule: InterpretationRule, input: RuleLookupInput): boolean {
   if (rule.scopeType === "global") return true;
   if (rule.scopeType === "star") return rule.starId === input.starId;
-  if (rule.constellationCode) return rule.constellationCode === input.constellationCode;
-  return rule.constellationId != null && input.constellationId != null && rule.constellationId === input.constellationId;
+  // Historical constellation rules remain stored for audit/snapshot compatibility,
+  // but a constellation must never substitute for the selected individual star.
+  return false;
 }

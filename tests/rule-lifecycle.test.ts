@@ -20,7 +20,7 @@ const astro: AstroResult = {
 };
 const textRule = { title: "Test", keywordsCsv: "몰입", generalText: "게시된 {starName} 해석", loveText: "", careerText: "", moneyText: "" };
 
-test("all seeded constellations, star and fallback match builtin output through preview", async t => {
+test("all 93 seeded stars and unavailable fallback match builtin output through preview", async t => {
   const db = testDatabase(); t.after(() => db.cleanup());
   const admin = await db.prisma.user.create({ data: { email: "seed@astune.local", role: "ADMIN" } });
   assert.equal((await seedDefaultRules(db.prisma, admin.id)).status, "PUBLISHED");
@@ -29,19 +29,19 @@ test("all seeded constellations, star and fallback match builtin output through 
   assert.equal(await db.prisma.adminAuditLog.count({ where: { action: "RULE_VERSION_PUBLISHED" } }), 1);
   const builtin = new InMemoryRuleRepository(DEFAULT_RULE_VERSION, DEFAULT_INTERPRETATION_RULES);
   const database = new PrismaRuleRepository(db.prisma);
-  const codes = DEFAULT_INTERPRETATION_RULES.filter(r => r.scopeType === "constellation").map(r => r.constellationCode!);
-  assert(new Set(codes).size >= 12);
-  for (const code of [...codes, "Oct"]) {
-    const selected = { ...astro, selectedStar: { ...astro.selectedStar, id: 1 }, selectedConstellation: { code, nameKo: code } };
+  const ids = DEFAULT_INTERPRETATION_RULES.filter(r => r.scopeType === "star").map(r => r.starId!);
+  assert.equal(new Set(ids).size, 93);
+  for (const id of [...ids, 1]) {
+    const selected = { ...astro, selectedStar: { ...astro.selectedStar, id } };
     const calculate = async () => ({ astro: selected, astronomyMeta: { sourceLabel: "fixture", engineName: "Skyfield", catalogVersion: "test", candidateCount: 1, calculatedAtUtc: "1995-05-05T06:00:00Z" } });
     const memoryResult = await previewReading(input, { calculate, repository: builtin });
     const dbResult = await previewReading(input, { calculate, repository: database });
-    assert.deepEqual(dbResult, memoryResult, code);
+    assert.deepEqual(dbResult, memoryResult, String(id));
     assert.equal(dbResult.interpretation.sections.length, 5);
     assert.equal(dbResult.interpretation.scores.length, 4);
     assert(dbResult.interpretation.sections.every(s => s.content.length > 20 && !/[{}]/.test(s.content)));
-    const expectedId = code === "Oct" ? "ir_global_default_v2" : `ir_constellation_${code.toLowerCase()}_v2`;
-    assert(dbResult.interpretation.sections.every(s => s.sourceRuleId === expectedId), code);
+    const expectedId = id === 1 ? "ir_global_unavailable_v3" : `ir_star_${id}_v3`;
+    assert(dbResult.interpretation.sections.every(s => s.sourceRuleId === expectedId), String(id));
   }
   assert.deepEqual(
     await new PreviewReadingService(database).generate({ input, astro }),
@@ -49,7 +49,7 @@ test("all seeded constellations, star and fallback match builtin output through 
   );
 });
 
-test("DB scope beats priority, priority beats ID, and empty sections fall back", async t => {
+test("DB star scope beats global priority; legacy constellation text and scores are ignored", async t => {
   const db = testDatabase(); t.after(() => db.cleanup());
   const admin = await db.prisma.user.create({ data: { email: "priority@astune.local", role: "ADMIN" } });
   const version = await db.prisma.ruleVersion.create({ data: { name: "priority", createdById: admin.id } });
@@ -57,7 +57,7 @@ test("DB scope beats priority, priority beats ID, and empty sections fall back",
     { id: "global", scopeType: "global" as const, priority: 32767, personalityText: "공통 성향", careerText: "공통 일", moneyText: "공통 재물" },
     { id: "const-low", scopeType: "constellation" as const, constellationCode: "Ori", priority: 10, careerText: "낮은 성좌 우선순위" },
     { id: "const-z", scopeType: "constellation" as const, constellationCode: "Ori", priority: 20, careerText: "동점 뒤 ID" },
-    { id: "const-a", scopeType: "constellation" as const, constellationCode: "Ori", priority: 20, careerText: "성좌 우선순위 선택" },
+    { id: "const-a", scopeType: "constellation" as const, constellationCode: "Ori", priority: 20, keywordsCsv: "리더십,추진력", careerText: "성좌 우선순위 선택" },
     { id: "star", scopeType: "star" as const, starId: 27989, priority: -10, generalText: "별 {starName}", personalityText: "별 성향", loveText: "별 연애" },
     { id: "wrong-star", scopeType: "star" as const, starId: 24436, priority: 200, generalText: "선택되면 안 됨" },
     { id: "wrong-const", scopeType: "constellation" as const, constellationCode: "Lyr", priority: 300, generalText: "선택되면 안 됨" }
@@ -67,8 +67,9 @@ test("DB scope beats priority, priority beats ID, and empty sections fall back",
   await assert.rejects(service.generate({ input, astro }), { code: "RULE_VERSION_NOT_FOUND" });
   await publishRules(db.prisma, version.id, admin.id);
   const result = await service.generate({ input, astro });
-  assert.deepEqual(result.sections.map(s => s.sourceRuleId), ["star", "star", "star", "const-a", "global"]);
-  assert.equal(result.sections[3].content, "성좌 우선순위 선택");
+  assert.deepEqual(result.sections.map(s => s.sourceRuleId), ["star", "star", "star", "global", "global"]);
+  assert.equal(result.sections[3].content, "공통 일");
+  assert(!result.matchedRuleIds.some(id => id.startsWith("const-")));
   assert(!result.matchedRuleIds.some(id => id.startsWith("wrong")));
   assert.equal(result.summary, "별 Betelgeuse");
   const next = await db.prisma.ruleVersion.create({ data: {

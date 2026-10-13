@@ -89,7 +89,6 @@ export class PrismaRuleRepository implements RuleRepository {
         OR: [
           { scopeType: "global" },
           { scopeType: "star", starId: input.starId },
-          { scopeType: "constellation", constellationId: input.constellationId ?? null },
         ],
       },
       orderBy: [{ priority: "desc" }, { id: "asc" }],

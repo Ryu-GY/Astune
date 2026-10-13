@@ -15,7 +15,7 @@ class BirthMomentInput(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     dst_fold: int | None = Field(default=None, ge=0, le=1)
-    max_magnitude: float = Field(default=2.0, ge=-2, le=5.5)
+    max_magnitude: float = Field(default=2.5, ge=-2, le=5.5)
 
 
 class AstronomyMeta(BaseModel):
