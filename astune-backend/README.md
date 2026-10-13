@@ -38,7 +38,7 @@ API 문서는 <http://127.0.0.1:8000/docs>에서 확인합니다. 요청 예제�
 - POST의 `query`, `country_code`, `timezone`, `allow_external`은 선택 필드입니다. 도시 이름 또는 좌표 쌍이 필요합니다.
 - `limit`은 1~10 정수, 기본 5입니다. 후보는 `data.items`로 반환하며 Next.js 공개 API는 이를 `data.candidates`로 변환합니다.
 - 좌표 시간대와 검색 결과를 기본 24시간·각 2,048개 한도로 캐시합니다. 실패는 캐시하지 않습니다. `LOCATION_CACHE_TTL_SECONDS`, `LOCATION_CACHE_SIZE`로 조정합니다.
-- 외부 검색은 `GEOCODER_ENABLED=true`와 요청의 `allow_external=true`가 모두 있어야 실행합니다. Open-Meteo 무료 서비스는 비상업 용도이며 출처 표기가 필요합니다. 제한은 프로세스별이므로 활성화 시 단일 워커로 사용하세요. [위치 데이터와 서비스 조건](../data/locations/README.md).
+- 외부 검색은 `GEOCODER_ENABLED=true`(기본값)와 명시적인 검색 요청의 `allow_external=true`가 모두 있어야 실행합니다. 입력 중에는 호출하지 않습니다. Open-Meteo 무료 서비스는 비상업 용도이며 출처 표기가 필요합니다. 제한은 프로세스별이므로 활성화 시 단일 워커로 사용하세요. [위치 데이터와 서비스 조건](../data/locations/README.md).
 
 ## 데이터와 오류
 

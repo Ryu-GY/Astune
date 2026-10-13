@@ -36,9 +36,13 @@ def test_shared_dictionary_aliases_country_and_cache(resolver):
         assert resolver.search(LocationRequest(query=name)).items[0].timezone == "Asia/Seoul"
 
 
-def test_external_is_disabled_by_default_even_when_requested(resolver, monkeypatch):
-    monkeypatch.setattr(resolver.client, "get", lambda *a, **k: pytest.fail("external geocoder disabled"))
-    assert not resolver.search(LocationRequest(query="Berlin", allow_external=True)).items
+def test_external_can_be_disabled_even_when_requested(monkeypatch):
+    resolver = LocationResolver(Settings(_env_file=None, GEOCODER_ENABLED=False))
+    try:
+        monkeypatch.setattr(resolver.client, "get", lambda *a, **k: pytest.fail("external geocoder disabled"))
+        assert not resolver.search(LocationRequest(query="Berlin", allow_external=True)).items
+    finally:
+        resolver.close()
 
 
 @pytest.mark.parametrize(("latitude", "longitude", "timezone"), [
@@ -112,6 +116,7 @@ def test_external_is_explicit_cached_and_rate_limited():
         assert resolver.search(request).cache_hit
         assert len(calls) == 1
         assert calls[0].url.params["countryCode"] == "DE"
+        assert calls[0].url.params["language"] == "ko"
         assert "birth_date" not in str(calls[0].url)
         with pytest.raises(AppException) as rate:
             resolver.search(LocationRequest(query="Rome", allow_external=True))
@@ -119,6 +124,27 @@ def test_external_is_explicit_cached_and_rate_limited():
         now[0] += 1.1
         resolver.search(LocationRequest(query="Rome", allow_external=True))
         assert len(calls) == 2
+    finally:
+        resolver.close()
+
+
+def test_country_filter_retains_distinct_same_named_cities_and_their_coordinates():
+    def handler(request):
+        return httpx.Response(200, json={"results": [
+            {"name": "Springfield", "admin1": "Illinois", "country": "United States", "country_code": "US",
+             "latitude": 39.8, "longitude": -89.6, "timezone": "America/Chicago"},
+            {"name": "Springfield", "admin1": "Massachusetts", "country": "United States", "country_code": "US",
+             "latitude": 42.1, "longitude": -72.6, "timezone": "America/New_York"},
+            {"name": "Springfield", "country_code": "CA", "latitude": 45.1, "longitude": -63.1, "timezone": "America/Halifax"},
+        ]})
+    resolver = remote_resolver(handler)
+    try:
+        result = resolver.search(LocationRequest(query="Springfield", country_code="US", allow_external=True))
+        assert len(result.items) == 2
+        assert [item.latitude for item in result.items] == [39.8, 42.1]
+        assert [item.timezone for item in result.items] == ["America/Chicago", "America/New_York"]
+        assert "Illinois" in result.items[0].display_name
+        assert "Massachusetts" in result.items[1].display_name
     finally:
         resolver.close()
 

@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     default_timezone: str = Field(default="Asia/Seoul", alias="DEFAULT_TIMEZONE")
     location_cache_ttl: int = Field(default=86400, ge=1, alias="LOCATION_CACHE_TTL_SECONDS")
     location_cache_size: int = Field(default=2048, ge=1, le=10000, alias="LOCATION_CACHE_MAX_SIZE")
-    geocoder_enabled: bool = Field(default=False, alias="GEOCODER_ENABLED")
+    geocoder_enabled: bool = Field(default=True, alias="GEOCODER_ENABLED")
     geocoder_url: str = Field(default="https://geocoding-api.open-meteo.com/v1/search", alias="GEOCODER_URL")
     geocoder_user_agent: str = Field(default="Astune/0.1 (+https://github.com/Ryu-GY/Astune)", alias="GEOCODER_USER_AGENT")
     geocoder_timeout: float = Field(default=5.0, ge=1, le=15, alias="GEOCODER_TIMEOUT_SECONDS")

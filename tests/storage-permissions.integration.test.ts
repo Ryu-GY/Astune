@@ -51,6 +51,7 @@ test("T702: authenticated storage, ownership and rule publication through public
   const detail = await import("../src/app/api/v1/readings/[id]/route");
   const list = await import("../src/app/api/v1/me/readings/route");
   const profiles = await import("../src/app/api/v1/birth-profiles/route");
+  const profileDetail = await import("../src/app/api/v1/birth-profiles/[id]/route");
   const versions = await import("../src/app/api/v1/admin/rule-versions/route");
   const rules = await import("../src/app/api/v1/admin/rule-versions/[id]/rules/route");
   const ruleById = await import("../src/app/api/v1/admin/rule-versions/[id]/rules/[ruleId]/route");
@@ -103,6 +104,7 @@ test("T702: authenticated storage, ownership and rule publication through public
       () => readings.POST(req("readings", "POST", input)), () => list.GET(req("me/readings")),
       () => detail.GET(req("readings/missing"), params("missing")),
       () => profiles.POST(req("birth-profiles", "POST", input)), () => profiles.GET(req("birth-profiles")),
+      () => profileDetail.GET(req("birth-profiles/missing"), params("missing")),
       () => versions.GET(req("admin/rule-versions")), () => versions.POST(req("admin/rule-versions", "POST", { name: "spoof" })),
       () => rules.POST(req("admin/rule-versions/missing/rules", "POST", {}), params("missing")),
       () => ruleById.PUT(req("admin/rule-versions/missing/rules/missing", "PUT", {}), { params: Promise.resolve({ id: "missing", ruleId: "missing" }) }),
@@ -153,6 +155,31 @@ test("T702: authenticated storage, ownership and rule publication through public
     assert(!("previewSnapshotJson" in first.items[0]));
     const ownProfiles = await response(profiles.GET(request("birth-profiles", "GET", undefined, aliceSession.cookie)));
     assert.equal(ownProfiles.items[0].id, saved.birthProfileId);
+  });
+
+  await t.test("account profiles save independently and expose exact reusable coordinates only to their owner", async () => {
+    const before = await db.prisma.reading.count();
+    const profileInput = { ...input, name: "Profile owner", birthAtLocal: "1995-05-05T15:00:30",
+      latitude: 34.69379, longitude: 135.50107, timezone: "Asia/Tokyo", locationName: "오사카 시, 오사카 부, 일본",
+      profileLabel: "나의 출생 정보", maxMagnitude: 3, userId: bob.id };
+    const saved = await response(profiles.POST(request("birth-profiles", "POST", profileInput, aliceSession.cookie)), 201);
+    assert.equal(await db.prisma.reading.count(), before, "saving a profile must not create a reading");
+    const id = saved.birthProfile.id;
+    const result = await response(profileDetail.GET(request(`birth-profiles/${id}`, "GET", undefined, aliceSession.cookie), params(id)));
+    assert.equal(result.birthProfile.input.latitude, 34.69379);
+    assert.equal(result.birthProfile.input.longitude, 135.50107);
+    assert.equal(result.birthProfile.input.timezone, "Asia/Tokyo");
+    assert.equal(result.birthProfile.input.birthAtLocal, "1995-05-05T15:00:30");
+    assert.equal(result.birthProfile.input.maxMagnitude, 3);
+    assert.equal(result.birthProfile.label, "나의 출생 정보");
+    for (const cookie of [bobSession.cookie, adminSession.cookie]) {
+      await response(profileDetail.GET(request(`birth-profiles/${id}`, "GET", undefined, cookie), params(id)), 404, "PROFILE_NOT_FOUND");
+    }
+    await response(profileDetail.GET(request("birth-profiles/missing", "GET", undefined, aliceSession.cookie), params("missing")), 404, "PROFILE_NOT_FOUND");
+    const preview = await response(previews.POST(request("readings/preview", "POST", result.birthProfile.input)));
+    assert.equal(preview.input.longitude, profileInput.longitude);
+    assert.equal(preview.input.birthAtLocal, profileInput.birthAtLocal);
+    assert.equal(await db.prisma.reading.count(), before, "using a profile for preview must not save a reading");
   });
 
   await t.test("invalid data, cross-origin requests and calculation failures leave no partial records", async () => {

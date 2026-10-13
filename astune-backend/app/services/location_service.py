@@ -104,7 +104,7 @@ class LocationResolver:
                 raise AppException(code=ErrorCode.GEOCODER_RATE_LIMITED, message="검색 요청이 많습니다. " + MANUAL_HINT, status_code=429)
             self._last_remote = now
             self._daily_requests.append(now)
-            params = {"name": query, "count": 10, "language": "en", "format": "json"}
+            params = {"name": query, "count": 10, "language": "ko", "format": "json"}
             if country:
                 params["countryCode"] = country
             response = self.client.get(self.settings.geocoder_url, params=params)
@@ -114,6 +114,9 @@ class LocationResolver:
                 raise ValueError("invalid geocoder response")
             items = []
             for row in data.get("results", [])[:10]:
+                # Do not accept a same-named city from another country, even if upstream ignores its filter.
+                if country and row.get("country_code", "").upper() != country:
+                    continue
                 name = row["name"]
                 latitude, longitude = float(row["latitude"]), float(row["longitude"])
                 zone = validate_timezone(row["timezone"]) if row.get("timezone") else self.infer_timezone(latitude, longitude)

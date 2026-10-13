@@ -7,6 +7,7 @@ import { AppError } from "@/lib/errors/app-error";
 import type { ReadingPreviewResponse, PreviewReadingInput } from "@/types/reading";
 import type { PreviewReadingResult } from "@/lib/readings/types";
 import { birthTimeNotice } from "@/lib/readings/birth-time";
+import { DEFAULT_READING_MAX_MAGNITUDE } from "@/lib/readings/coverage";
 
 function notFound(kind: "READING" | "PROFILE"): never {
   throw new AppError("저장한 정보를 찾을 수 없습니다.", { statusCode: 404, code: `${kind}_NOT_FOUND` });
@@ -24,7 +25,7 @@ function profileData(input: PreviewReadingInput, userId: string, label?: string)
     userId, label: label || `${input.name || input.locationName || "출생지"} 프로필`,
     displayName: input.name, birthAtLocal: input.birthAtLocal, timezone: input.timezone,
     locationName: input.locationName, latitude: input.latitude, longitude: input.longitude,
-    dstFold: input.dstFold, maxMagnitude: input.maxMagnitude ?? 2,
+    dstFold: input.dstFold, maxMagnitude: input.maxMagnitude ?? DEFAULT_READING_MAX_MAGNITUDE,
   };
 }
 
@@ -54,7 +55,7 @@ export async function createReading(input: unknown, session: { userId: string })
       userId: session.userId, birthProfileId, displayName: normalized.name,
       birthAtLocal: normalized.birthAtLocal, timezone: normalized.timezone, locationName: normalized.locationName,
       latitude: normalized.latitude, longitude: normalized.longitude, dstFold: normalized.dstFold,
-      maxMagnitude: normalized.maxMagnitude ?? 2, birthTimeUnknown: normalized.birthTimeUnknown ?? false,
+      maxMagnitude: normalized.maxMagnitude ?? DEFAULT_READING_MAX_MAGNITUDE, birthTimeUnknown: normalized.birthTimeUnknown ?? false,
       inputSnapshotJson: JSON.stringify(normalized), previewSnapshotJson: JSON.stringify(preview),
       zenithStarHipId: preview.zenithStar.hipId, zenithStarName: preview.zenithStar.name,
       constellationCode: preview.zenithStar.constellationCode, constellationName: preview.zenithStar.constellationName,
@@ -112,6 +113,11 @@ export async function getMyBirthProfiles(session: { userId: string }, query: unk
     prisma.birthProfile.count({ where }),
   ]);
   return { ok: true, items: items.map(item => ({ ...item, input: profileInput(item) })), page, pageSize, total };
+}
+export async function getBirthProfileById(id: string, session: { userId: string }) {
+  const profile = await prisma.birthProfile.findFirst({ where: { id, userId: session.userId } });
+  if (!profile) notFound("PROFILE");
+  return { ok: true, birthProfile: { id: profile.id, label: profile.label, input: profileInput(profile) } };
 }
 export async function getMyReadings(session: { userId: string }, query: unknown = {}) {
   const { page, pageSize } = paginationSchema.parse(query);

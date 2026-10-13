@@ -1,7 +1,7 @@
 import { AccountAccess } from "@/components/auth/AccountAccess";
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const query = await searchParams;
-  const callbackURL = ["/me/readings", "/readings/preview", "/admin/rule-versions"].includes(query.next || "") ? query.next! : "/me/readings";
+  const callbackURL = ["/account", "/me/readings", "/readings/preview", "/admin/rule-versions", "/horoscope"].includes(query.next || "") ? query.next! : "/account";
   return <section className="login-page">
     <p className="eyebrow">YOUR STAR, ALWAYS WITH YOU</p>
     <h1 className="section-title">나의 별 이야기를 이어가세요</h1>

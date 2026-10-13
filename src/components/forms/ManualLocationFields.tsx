@@ -37,7 +37,7 @@ export function ManualLocationFields({ value, onChange, disabled = false }: {
     try {
       const response = await fetch("/api/v1/locations/resolve", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(point), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
+        body: JSON.stringify(point), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(130000)]),
       });
       const data = await response.json() as ApiResponse<{ candidates: { timezone: string }[] }>;
       if (controller.signal.aborted) return;

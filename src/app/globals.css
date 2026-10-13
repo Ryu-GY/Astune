@@ -34,6 +34,11 @@ svg { flex-shrink: 0; }
 .desktop-nav a.active::after { content: ""; position: absolute; bottom: -1px; height: 2px; width: 100%; background: var(--accent); }
 .header-note { margin-left: auto; display: flex; gap: 16px; align-items: center; font-family: var(--serif); font-size: 12px; }
 .header-note svg { width: 19px; color: var(--gold); }
+.account-navigation { margin-left: auto; display: flex; align-items: center; gap: 10px; position: relative; white-space: nowrap; font-family: var(--serif); font-size: 12px; }
+.account-navigation > a, .account-navigation > button { display: inline-flex; align-items: center; min-height: 44px; padding: 4px 0; color: var(--text); }
+.account-navigation > button { border: 0; background: transparent; }
+.account-navigation [aria-current="page"] { text-decoration: underline; text-underline-offset: 5px; }
+.account-navigation-error { position: absolute; right: 0; top: 40px; width: 240px; white-space: normal; z-index: 30; }
 .mobile-nav, .mobile-header-note, .mobile-only { display: none; }
 .page { padding-top: 46px; padding-bottom: 12px; min-height: calc(100svh - 190px); }
 .reading-workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: start; }
@@ -207,7 +212,7 @@ pre { background: #edf0e6; padding: 16px; overflow: auto; font-size: 12px; }
   .brand svg { width: 21px; height: 21px; }
   .desktop-nav, .header-note { display: none; }
   .mobile-header-note { display: block; margin-left: auto; font-family: Georgia, serif; font-size: 7px; letter-spacing: 1.8px; color: var(--gold); }
-  .mobile-nav { display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; bottom: 0; left: 0; right: 0; height: calc(70px + env(safe-area-inset-bottom, 0px)); padding: 5px 20px calc(5px + env(safe-area-inset-bottom, 0px)); background: #f9f8f2f5; backdrop-filter: blur(18px); border-top: 1px solid #d7d9ce; z-index: 20; }
+  .mobile-nav { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; bottom: 0; left: 0; right: 0; height: calc(70px + env(safe-area-inset-bottom, 0px)); padding: 5px 20px calc(5px + env(safe-area-inset-bottom, 0px)); background: #f9f8f2f5; backdrop-filter: blur(18px); border-top: 1px solid #d7d9ce; z-index: 20; }
   .mobile-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #858b7a; font-size: 10px; position: relative; min-height: 50px; }
   .mobile-nav svg { width: 22px; height: 22px; }
   .mobile-nav a.active { color: var(--accent); font-weight: 700; }
@@ -307,6 +312,21 @@ pre { background: #edf0e6; padding: 16px; overflow: auto; font-size: 12px; }
 .profile-library { margin-block: 35px; }
 .profile-row { display: flex; align-items: center; gap: 24px; justify-content: space-between; padding-block: 18px; border-bottom: 1px solid var(--border); }
 .profile-row .help { margin: 7px 0 0; }
+.account-page { max-width: 820px; margin-inline: auto; }
+.profile-editor { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 28px; }
+.birth-profile-form { max-width: 600px; }
+.birth-profile-form fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.birth-profile-form .birth-fields + .birth-fields { margin-top: 22px; }
+.profile-saved-notice { padding: 18px 22px; border: 1px solid var(--border); background: #e9ede3; }
+.profile-saved-notice p { margin-top: 0; }
+.saved-profile-picker { padding: 16px; margin-bottom: 22px; border: 1px solid var(--border); border-radius: 3px; }
+.saved-profile-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; }
+.saved-profile-heading > a { font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.profile-picker-controls { display: flex; gap: 10px; }
+.profile-picker-controls select { flex: 1; min-width: 0; }
+.profile-picker-controls button { flex-shrink: 0; font-size: 12px; min-height: 44px; padding: 10px 14px; }
+.profile-picker-pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 12px; }
+.profile-picker-pagination button { min-height: 44px; border: 0; background: transparent; color: var(--accent); }
 .saved-item h3 { font-family: var(--display), var(--serif); font-size: 30px; font-weight: 400; margin: 14px 0 8px; }
 .admin-manager { display: grid; gap: 25px; max-width: 960px; margin: 25px auto 60px; }
 .admin-manager textarea { width: 100%; padding: 14px; border: 1px solid var(--border); background: var(--paper); color: var(--text); font: inherit; font-size: 14px; line-height: 1.8; resize: vertical; }
