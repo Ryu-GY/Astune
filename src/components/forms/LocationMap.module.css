@@ -1,0 +1,13 @@
+.picker { min-width: 0; width: 100%; }
+.map { height: 320px; width: 100%; border: 1px solid #d8cfbd; border-radius: 12px; z-index: 0; background: #ece8df; }
+.help { font-size: 12px; line-height: 1.6; color: #68645d; margin: 8px 0; }
+.tools { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+.tools a { font-size: 11px; color: #68645d; text-decoration: underline; }
+.centerButton { font: inherit; font-size: 12px; color: #353e35; padding: 9px 12px; border: 1px solid #bbb5a6; border-radius: 7px; background: #f9f7f0; cursor: pointer; }
+.centerButton:focus-visible { outline: 2px solid #48664e; outline-offset: 3px; }
+.marker { display: grid; place-items: center; border: 2px solid white; background: #48664e; border-radius: 50%; box-shadow: 0 1px 7px #0005; }
+.marker span { width: 7px; height: 7px; border-radius: 50%; background: white; }
+.coordinates { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fields { display: grid; gap: 16px; min-width: 0; margin-top: 16px; }
+.fields input { min-width: 0; }
+@media (max-width: 480px) { .map { height: 280px; } }

@@ -41,11 +41,12 @@ def test_real_skyfield_preview():
 @pytest.mark.parametrize("body", [
     {"birth_date": "1995-05-05", "birth_time": "15:00:00"},
     {**BASE, "city_name": " "},
+    {**BASE, "city_name": "x" * 101},
+    {**BASE, "city_name": "", "latitude": 37.5, "longitude": 127},
     {**BASE, "birth_date": "2024-02-31"},
     {**BASE, "birth_time_local": "15:00:00+00:00"},
     {**BASE, "latitude": 91, "longitude": 0, "timezone": "Asia/Seoul"},
     {**BASE, "latitude": 37.5},
-    {**BASE, "latitude": 37.5, "longitude": 127},
     {**BASE, "max_magnitude": 5.6},
 ])
 def test_bad_input_returns_validation_error_not_500(body):

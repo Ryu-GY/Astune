@@ -1,0 +1,57 @@
+{
+  "measuredAt": "2026-10-13T04:55:22.641Z",
+  "environment": {
+    "platform": "win32",
+    "cpu": "AMD Ryzen 5 5600 6-Core Processor              ",
+    "node": "v24.21.0"
+  },
+  "methodology": "Local real HTTP, worst supported magnitude 5.5, varied synthetic dates/coordinates, no result memoization. Nearest-rank P95; startup/preflight and external geocoding excluded.",
+  "targetP95Ms": 2500,
+  "profiles": [
+    {
+      "target": "FastAPI",
+      "concurrency": 1,
+      "requests": 100,
+      "firstRequestMs": 49.57,
+      "p50Ms": 12.12,
+      "p95Ms": 14.83,
+      "maxMs": 18.65,
+      "throughputPerSecond": 79.87,
+      "errors": 0
+    },
+    {
+      "target": "FastAPI",
+      "concurrency": 4,
+      "requests": 100,
+      "firstRequestMs": 49.57,
+      "p50Ms": 46.77,
+      "p95Ms": 68.87,
+      "maxMs": 90.05,
+      "throughputPerSecond": 81.48,
+      "errors": 0
+    },
+    {
+      "target": "Next.js + FastAPI + interpretation",
+      "concurrency": 1,
+      "requests": 100,
+      "firstRequestMs": 68.05,
+      "p50Ms": 28.51,
+      "p95Ms": 33.14,
+      "maxMs": 49.16,
+      "throughputPerSecond": 34.45,
+      "errors": 0
+    },
+    {
+      "target": "Next.js + FastAPI + interpretation",
+      "concurrency": 4,
+      "requests": 100,
+      "firstRequestMs": 68.05,
+      "p50Ms": 62.15,
+      "p95Ms": 74.87,
+      "maxMs": 92.01,
+      "throughputPerSecond": 63.23,
+      "errors": 0
+    }
+  ],
+  "passed": true
+}

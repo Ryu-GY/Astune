@@ -66,6 +66,17 @@
     ]
   },
   {
+    "name": "Ulsan",
+    "country": "KR",
+    "timezone": "Asia/Seoul",
+    "latitude": 35.5394,
+    "longitude": 129.3114,
+    "aliases": [
+      "울산",
+      "울산광역시"
+    ]
+  },
+  {
     "name": "Jeju",
     "country": "KR",
     "timezone": "Asia/Seoul",

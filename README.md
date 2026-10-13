@@ -15,7 +15,7 @@ npm run backend:sync
 npm run backend:data
 ```
 
-`backend:data`는 최초 한 번 Skyfield의 DE421 천체력 파일을 내려받습니다. 이후 계산 요청은 로컬 파일을 사용합니다. 파일은 Git에 포함하지 않습니다.
+`backend:data`는 최초 한 번 DE421 천체력 파일을 내려받고 날짜 범위와 사용 가능 여부를 검증합니다. 이후 계산 요청은 로컬 파일을 사용합니다. 파일은 Git에 포함하지 않습니다. 배포 전에 `npm run backend:check`로 검사하세요. Python 서버도 시작할 때 성표·천체력·도시·시간대 데이터를 미리 읽으며 누락·손상이 있으면 시작하지 않습니다. `/health`는 생존 확인, `/ready`는 계산 데이터 준비 상태를 반환합니다.
 
 서로 다른 터미널에서 실행합니다.
 
@@ -59,8 +59,11 @@ npm run backend:catalog -- --download
 ## 개발 진행
 
 - T101 완료: 31개 샘플 → 2,848개 성표, 재생성 도구, 메타데이터 무결성 검증, 좌표 기준 시점·고유운동·시차 반영.
-- 2026-10-13 로컬 TestClient 순차 5회 측정: 최대 등급 5.5 요청 약 2.16~2.40초. 운영 환경 P95와 동시 요청 성능은 T106에서 별도로 검증해야 합니다.
-- 다음 항목: T103 도시·시간대 데이터 및 위치 검색 확대.
+- T102 완료: 로컬 DE421 준비·검사, 시작 시 예열, `/ready`. 준비 파일의 범위는 1899-07-29~2053-10-09 TDB이며 개별 요청은 실제 순간의 범위를 다시 확인합니다.
+- T103 완료: 공용 도시 사전 13개(서울·6개 광역시·제주 포함), 오프라인 좌표→시간대 추론, 수동 보정, TTL/LRU 캐시, 선택적 외부 지오코딩과 장애 처리. 다른 도시는 지도에서 좌표·시간대를 함께 입력할 수 있습니다.
+- T104 완료: zoneinfo UTC 변환, 서머타임 중복·누락, 30분 전환·건너뛴 날짜·과거 한국 서머타임 회귀 검증.
+- T105 완료: Skyfield apparent alt/az, 지평선·최대 등급 필터, 고도·밝기·HIP 순의 일관된 후보 선택.
+- T106 완료: 별 배열 계산, 성표·천체력 재사용, 단일 별 기준 결과 비교, 동시 요청·반복 I/O 검사. 로컬 실제 HTTP 400회에서 전체 미리보기 P95는 순차 33.14ms, 동시 4개 74.87ms로 목표 2,500ms 미만을 만족했습니다. 운영 환경 성능은 배포 후 별도 확인합니다. [측정 조건과 결과](docs/verification/t102-t106.md).
 - `outputs/`의 v1.4 개발 문서는 T101 착수 전 상태를 기록한 스냅샷입니다. 최신 구현 상태는 이 README와 테스트를 기준으로 확인합니다.
 
 ## 설정과 데이터베이스
@@ -106,7 +109,9 @@ DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변�
 
 시간은 UTC 오프셋 없는 현지시각으로 전달합니다. 서머타임으로 같은 시각이 두 번 발생하면 `dstFold: 0` 또는 `1`을 지정해야 합니다. 존재하지 않는 시각은 오류로 반환합니다. DE421의 날짜 범위 밖 요청도 명시적으로 거절합니다.
 
-Python API는 `birth_date`, `birth_time_local`(기존 `birth_time`도 허용), `timezone`, `latitude`, `longitude`를 받습니다. Python 측에서 좌표 대신 `city_name`을 사용할 수도 있으며 동봉된 도시 샘플 목록 범위에서 검색합니다.
+Python API는 `birth_date`, `birth_time_local`(기존 `birth_time`도 허용), `timezone`, `latitude`, `longitude`를 받습니다. 좌표에서 시간대를 추론하므로 Python 측의 `timezone`은 생략할 수 있습니다. 좌표 대신 `city_name`도 받으며 중복 도시 이름은 임의 선택하지 않고 후보 선택을 요구합니다.
+
+`GET /api/v1/locations/resolve?q=서울`은 로컬 도시 검색, POST에 `{"latitude":40.7128,"longitude":-74.006}`을 전달하면 좌표와 `America/New_York` 시간대를 반환합니다. Next.js 위치 API는 `q`, `countryCode`, `allowExternal`, Python API는 `query`, `country_code`, `allow_external`을 사용합니다. 육지 밖이나 경계에서 시간대를 찾지 못하면 직접 입력해야 합니다. 현대 경계로 시간대를 찾고 zoneinfo로 과거 오프셋을 적용하므로 과거 행정 경계 변경이 있는 출생지는 보정이 필요할 수 있습니다. [위치 데이터·외부 검색 설정·지도 안내](data/locations/README.md).
 
 ## 검증
 

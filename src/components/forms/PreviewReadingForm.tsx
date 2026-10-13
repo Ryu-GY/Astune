@@ -5,6 +5,7 @@ import { ReadingCard } from "@/components/reading/ReadingCard";
 import { StarFeature } from "@/components/reading/StarFeature";
 import { Icon } from "@/components/ui/Icon";
 import type { ReadingPreviewResponse } from "@/types/reading";
+import { ManualLocationFields } from "./ManualLocationFields";
 
 type City = { name: string; country: string; timezone: string; latitude: number; longitude: number; aliases?: string[] };
 
@@ -84,11 +85,7 @@ export function PreviewReadingForm({ cities }: { cities: City[] }) {
             <div><label className="label" htmlFor="birth-time">태어난 시간</label><input className="input" id="birth-time" type="time" required value={birthTime} onChange={event => setBirthTime(event.target.value)} /></div>
           </div>
           <div className="city-field"><label className="label" htmlFor="birth-city">태어난 도시</label><div className="select-wrap"><select className="select" id="birth-city" value={cityName} onChange={event => setCityName(event.target.value)}>{cities.map(city => <option value={city.name} key={city.name}>{city.aliases?.[0] || city.name} · {city.country}</option>)}<option value="manual">다른 도시 · 직접 입력</option></select><Icon name="pin" /></div></div>
-          {isManual ? <div className="manual-location">
-            <div><label className="label" htmlFor="location-name">도시 이름</label><input id="location-name" className="input" required maxLength={120} value={manualCity.locationName} onChange={event => setManualCity({ ...manualCity, locationName: event.target.value })} /></div>
-            <div><label className="label" htmlFor="timezone">시간대</label><input id="timezone" className="input" required placeholder="Asia/Seoul" value={manualCity.timezone} onChange={event => setManualCity({ ...manualCity, timezone: event.target.value })} /></div>
-            <div className="birth-fields"><div><label className="label" htmlFor="latitude">위도</label><input id="latitude" className="input" type="number" required min={-90} max={90} step="any" value={manualCity.latitude} onChange={event => setManualCity({ ...manualCity, latitude: event.target.value })} /></div><div><label className="label" htmlFor="longitude">경도</label><input id="longitude" className="input" type="number" required min={-180} max={180} step="any" value={manualCity.longitude} onChange={event => setManualCity({ ...manualCity, longitude: event.target.value })} /></div></div>
-          </div> : null}
+          {isManual ? <ManualLocationFields value={manualCity} onChange={setManualCity} disabled={loading} /> : null}
           <details className="advanced-options"><summary>세부 설정 <span>이름 · 별의 밝기 · 서머타임</span></summary><div className="advanced-content">
             <div><label htmlFor="name" className="label">이름 <span className="optional">선택</span></label><input className="input" id="name" value={name} maxLength={50} onChange={event => setName(event.target.value)} placeholder="어떻게 불러드릴까요?" /></div>
             <div><label htmlFor="maxMagnitude" className="label">계산할 별의 최대 등급</label><input id="maxMagnitude" className="input" type="number" min="-2" max="5.5" step="0.1" required value={maxMagnitude} onChange={event => setMaxMagnitude(event.target.value)} /><p className="help">기본 2.0 · 최대 5.5등급까지. 숫자가 작을수록 밝은 별을 찾습니다.</p></div>

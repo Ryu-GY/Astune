@@ -15,7 +15,9 @@
     "backend:data": "uv run --directory astune-backend python -m app.astro.prepare_data",
     "backend:catalog": "uv run --directory astune-backend python -m app.astro.build_bright_catalog",
     "backend:dev": "uv run --directory astune-backend uvicorn app.main:app --host 127.0.0.1 --port 8000",
-    "backend:test": "uv run --directory astune-backend pytest"
+    "backend:test": "uv run --directory astune-backend pytest",
+    "backend:check": "uv run --directory astune-backend python -m app.astro.check_data",
+    "benchmark:preview": "node scripts/benchmark-preview.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -23,7 +25,8 @@
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "zod": "^3.25.0"
+    "zod": "^3.25.0",
+    "leaflet": "1.9.4"
   },
   "devDependencies": {
     "@types/luxon": "^3.7.0",
@@ -32,7 +35,8 @@
     "@types/react-dom": "^19.2.0",
     "prisma": "^6.19.0",
     "tsx": "^4.20.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "@types/leaflet": "1.9.21"
   },
   "engines": {
     "node": ">=20.9.0"

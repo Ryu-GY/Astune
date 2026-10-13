@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC
 from functools import cached_property
 from pathlib import Path
+import numpy as np
 
 from app.astro.catalog import PreparedStarTarget, load_prepared_star_targets
 from app.astro.schemas import (
@@ -68,7 +69,7 @@ class AstronomyEngine:
         return load.timescale(builtin=True)
 
     @cached_property
-    def _earth(self):
+    def _ephemeris(self):
         from skyfield.api import load_file
 
         if not self.config.ephemeris_path.exists():
@@ -82,11 +83,60 @@ class AstronomyEngine:
             eph = load_file(str(self.config.ephemeris_path))
         except Exception as exc:
             raise AstuneError(ErrorCode.CATALOG_NOT_READY, "ephemeris file could not be loaded") from exc
-        return eph["earth"]
+        return eph
+
+    @cached_property
+    def _earth(self):
+        return self._ephemeris["earth"]
 
     @cached_property
     def _prepared_targets(self) -> tuple[PreparedStarTarget, ...]:
         return load_prepared_star_targets(str(self.config.catalog_path))
+
+    @cached_property
+    def _star_field(self):
+        from skyfield.api import Star
+        records = [item.record for item in self._prepared_targets]
+        return Star(
+            ra_hours=np.array([star.ra_hours for star in records]),
+            dec_degrees=np.array([star.dec_degrees for star in records]),
+            ra_mas_per_year=np.array([star.ra_mas_per_year for star in records]),
+            dec_mas_per_year=np.array([star.dec_mas_per_year for star in records]),
+            parallax_mas=np.array([star.parallax_mas for star in records]),
+            epoch=np.array([1721045.0 + star.epoch_year * 365.25 for star in records]),
+        )
+
+    @cached_property
+    def _magnitudes(self):
+        return np.array([item.record.magnitude for item in self._prepared_targets])
+
+    def preflight(self) -> dict:
+        """Warm reusable objects and check the local SPK without a network request."""
+        self._earth
+        self._star_field
+        self._magnitudes
+        self._timescale
+        segments = self._ephemeris.segments
+        start = max(segment.spk_segment.start_jd for segment in segments)
+        end = min(segment.spk_segment.end_jd for segment in segments)
+        if start >= end:
+            raise AstuneError(ErrorCode.CATALOG_NOT_READY, "ephemeris has no shared date coverage")
+        # Exercise Earth evaluation to catch incomplete or incompatible SPKs at startup.
+        self._earth.at(self._timescale.tdb_jd((start + end) / 2))
+        return {
+            "catalog_version": self.config.catalog_version,
+            "catalog_count": len(self._prepared_targets),
+            "ephemeris": self.config.ephemeris_path.name,
+            "start_jd_tdb": start, "end_jd_tdb": end,
+            "start_tdb": self._timescale.tdb_jd(start).tdb_strftime("%Y-%m-%d"),
+            "end_tdb": self._timescale.tdb_jd(end).tdb_strftime("%Y-%m-%d"),
+        }
+
+    def close(self) -> None:
+        ephemeris = self.__dict__.pop("_ephemeris", None)
+        self.__dict__.pop("_earth", None)
+        if ephemeris is not None:
+            ephemeris.close()
 
     def calculate_representative_star(
         self,
@@ -115,19 +165,19 @@ class AstronomyEngine:
         candidate_count = 0
         try:
             observer_at_time = observer.at(skyfield_time)
-            for prepared in self._prepared_targets:
-                if prepared.record.magnitude > request.max_magnitude:
-                    continue
-                apparent = observer_at_time.observe(prepared.target).apparent()
-                alt, az, _distance = apparent.altaz()
-                if float(alt.degrees) <= 0:
-                    continue
-                candidate_count += 1
+            # One vectorized Skyfield observation replaces thousands of scalar calls.
+            alt, az, _distance = observer_at_time.observe(self._star_field).apparent().altaz()
+            altitudes, azimuths = np.asarray(alt.degrees), np.asarray(az.degrees)
+            if not np.isfinite(altitudes).all() or not np.isfinite(azimuths).all():
+                raise ValueError("non-finite apparent coordinates")
+            visible = (altitudes > 0) & (self._magnitudes <= request.max_magnitude)
+            candidate_count = int(np.count_nonzero(visible))
+            for index in np.flatnonzero(visible):
                 candidate = CandidateScore(
-                    target=prepared,
-                    altitude_deg=float(alt.degrees),
-                    azimuth_deg=float(az.degrees),
-                    zenith_distance_deg=float(90.0 - alt.degrees),
+                    target=self._prepared_targets[index],
+                    altitude_deg=float(altitudes[index]),
+                    azimuth_deg=float(azimuths[index]),
+                    zenith_distance_deg=float(90.0 - altitudes[index]),
                 )
                 if _is_better_candidate(candidate, best):
                     best = candidate
