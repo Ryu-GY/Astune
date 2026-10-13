@@ -1,0 +1,281 @@
+[
+  {
+    "hipId": 32349,
+    "name": "Sirius",
+    "constellationCode": "CMa",
+    "constellationName": "Canis Major",
+    "magnitude": -1.46,
+    "raHours": 6.752,
+    "decDegrees": -16.716
+  },
+  {
+    "hipId": 30438,
+    "name": "Canopus",
+    "constellationCode": "Car",
+    "constellationName": "Carina",
+    "magnitude": -0.74,
+    "raHours": 6.399,
+    "decDegrees": -52.695
+  },
+  {
+    "hipId": 69673,
+    "name": "Arcturus",
+    "constellationCode": "Boo",
+    "constellationName": "Bootes",
+    "magnitude": -0.05,
+    "raHours": 14.261,
+    "decDegrees": 19.182
+  },
+  {
+    "hipId": 71683,
+    "name": "Alpha Centauri",
+    "constellationCode": "Cen",
+    "constellationName": "Centaurus",
+    "magnitude": -0.27,
+    "raHours": 14.66,
+    "decDegrees": -60.835
+  },
+  {
+    "hipId": 91262,
+    "name": "Vega",
+    "constellationCode": "Lyr",
+    "constellationName": "Lyra",
+    "magnitude": 0.03,
+    "raHours": 18.615,
+    "decDegrees": 38.783
+  },
+  {
+    "hipId": 24608,
+    "name": "Capella",
+    "constellationCode": "Aur",
+    "constellationName": "Auriga",
+    "magnitude": 0.08,
+    "raHours": 5.279,
+    "decDegrees": 45.998
+  },
+  {
+    "hipId": 24436,
+    "name": "Rigel",
+    "constellationCode": "Ori",
+    "constellationName": "Orion",
+    "magnitude": 0.13,
+    "raHours": 5.243,
+    "decDegrees": -8.202
+  },
+  {
+    "hipId": 37279,
+    "name": "Procyon",
+    "constellationCode": "CMi",
+    "constellationName": "Canis Minor",
+    "magnitude": 0.34,
+    "raHours": 7.655,
+    "decDegrees": 5.225
+  },
+  {
+    "hipId": 7588,
+    "name": "Achernar",
+    "constellationCode": "Eri",
+    "constellationName": "Eridanus",
+    "magnitude": 0.45,
+    "raHours": 1.628,
+    "decDegrees": -57.236
+  },
+  {
+    "hipId": 27989,
+    "name": "Betelgeuse",
+    "constellationCode": "Ori",
+    "constellationName": "Orion",
+    "magnitude": 0.5,
+    "raHours": 5.919,
+    "decDegrees": 7.407
+  },
+  {
+    "hipId": 68702,
+    "name": "Hadar",
+    "constellationCode": "Cen",
+    "constellationName": "Centaurus",
+    "magnitude": 0.61,
+    "raHours": 14.063,
+    "decDegrees": -60.374
+  },
+  {
+    "hipId": 97649,
+    "name": "Altair",
+    "constellationCode": "Aql",
+    "constellationName": "Aquila",
+    "magnitude": 0.77,
+    "raHours": 19.849,
+    "decDegrees": 8.868
+  },
+  {
+    "hipId": 60718,
+    "name": "Acrux",
+    "constellationCode": "Cru",
+    "constellationName": "Crux",
+    "magnitude": 0.76,
+    "raHours": 12.443,
+    "decDegrees": -63.099
+  },
+  {
+    "hipId": 21421,
+    "name": "Aldebaran",
+    "constellationCode": "Tau",
+    "constellationName": "Taurus",
+    "magnitude": 0.86,
+    "raHours": 4.599,
+    "decDegrees": 16.509
+  },
+  {
+    "hipId": 65474,
+    "name": "Spica",
+    "constellationCode": "Vir",
+    "constellationName": "Virgo",
+    "magnitude": 0.98,
+    "raHours": 13.42,
+    "decDegrees": -11.161
+  },
+  {
+    "hipId": 80763,
+    "name": "Antares",
+    "constellationCode": "Sco",
+    "constellationName": "Scorpius",
+    "magnitude": 1.06,
+    "raHours": 16.49,
+    "decDegrees": -26.432
+  },
+  {
+    "hipId": 37826,
+    "name": "Pollux",
+    "constellationCode": "Gem",
+    "constellationName": "Gemini",
+    "magnitude": 1.14,
+    "raHours": 7.756,
+    "decDegrees": 28.026
+  },
+  {
+    "hipId": 113368,
+    "name": "Fomalhaut",
+    "constellationCode": "PsA",
+    "constellationName": "Piscis Austrinus",
+    "magnitude": 1.16,
+    "raHours": 22.961,
+    "decDegrees": -29.622
+  },
+  {
+    "hipId": 102098,
+    "name": "Deneb",
+    "constellationCode": "Cyg",
+    "constellationName": "Cygnus",
+    "magnitude": 1.25,
+    "raHours": 20.691,
+    "decDegrees": 45.281
+  },
+  {
+    "hipId": 49669,
+    "name": "Regulus",
+    "constellationCode": "Leo",
+    "constellationName": "Leo",
+    "magnitude": 1.36,
+    "raHours": 10.139,
+    "decDegrees": 11.967
+  },
+  {
+    "hipId": 33579,
+    "name": "Adhara",
+    "constellationCode": "CMa",
+    "constellationName": "Canis Major",
+    "magnitude": 1.5,
+    "raHours": 6.977,
+    "decDegrees": -28.972
+  },
+  {
+    "hipId": 36850,
+    "name": "Castor",
+    "constellationCode": "Gem",
+    "constellationName": "Gemini",
+    "magnitude": 1.58,
+    "raHours": 7.576,
+    "decDegrees": 31.888
+  },
+  {
+    "hipId": 61084,
+    "name": "Gacrux",
+    "constellationCode": "Cru",
+    "constellationName": "Crux",
+    "magnitude": 1.63,
+    "raHours": 12.519,
+    "decDegrees": -57.113
+  },
+  {
+    "hipId": 25336,
+    "name": "Bellatrix",
+    "constellationCode": "Ori",
+    "constellationName": "Orion",
+    "magnitude": 1.64,
+    "raHours": 5.418,
+    "decDegrees": 6.349
+  },
+  {
+    "hipId": 25428,
+    "name": "Elnath",
+    "constellationCode": "Tau",
+    "constellationName": "Taurus",
+    "magnitude": 1.65,
+    "raHours": 5.438,
+    "decDegrees": 28.607
+  },
+  {
+    "hipId": 45238,
+    "name": "Miaplacidus",
+    "constellationCode": "Car",
+    "constellationName": "Carina",
+    "magnitude": 1.67,
+    "raHours": 9.22,
+    "decDegrees": -69.717
+  },
+  {
+    "hipId": 26311,
+    "name": "Alnilam",
+    "constellationCode": "Ori",
+    "constellationName": "Orion",
+    "magnitude": 1.69,
+    "raHours": 5.603,
+    "decDegrees": -1.201
+  },
+  {
+    "hipId": 109268,
+    "name": "Alnair",
+    "constellationCode": "Gru",
+    "constellationName": "Grus",
+    "magnitude": 1.74,
+    "raHours": 22.137,
+    "decDegrees": -46.961
+  },
+  {
+    "hipId": 62956,
+    "name": "Alioth",
+    "constellationCode": "UMa",
+    "constellationName": "Ursa Major",
+    "magnitude": 1.76,
+    "raHours": 12.9,
+    "decDegrees": 55.96
+  },
+  {
+    "hipId": 15863,
+    "name": "Mirfak",
+    "constellationCode": "Per",
+    "constellationName": "Perseus",
+    "magnitude": 1.79,
+    "raHours": 3.405,
+    "decDegrees": 49.861
+  },
+  {
+    "hipId": 54061,
+    "name": "Dubhe",
+    "constellationCode": "UMa",
+    "constellationName": "Ursa Major",
+    "magnitude": 1.79,
+    "raHours": 11.062,
+    "decDegrees": 61.75
+  }
+]

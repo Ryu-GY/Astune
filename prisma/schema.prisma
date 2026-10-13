@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum RuleVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  name               String?
+  role               UserRole         @default(USER)
+  birthProfiles      BirthProfile[]
+  readings           Reading[]
+  createdRuleVersions RuleVersion[]   @relation("RuleVersionCreator")
+  auditLogs          AdminAuditLog[]  @relation("AuditAdmin")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model BirthProfile {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String
+  birthAtLocal String
+  timezone     String
+  locationName String?
+  latitude     Float
+  longitude    Float
+  readings     Reading[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model Reading {
+  id                     String       @id @default(cuid())
+  userId                 String?
+  user                   User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  birthProfileId         String?
+  birthProfile           BirthProfile? @relation(fields: [birthProfileId], references: [id], onDelete: SetNull)
+  displayName            String?
+  birthAtLocal           String
+  timezone               String
+  locationName           String?
+  latitude               Float
+  longitude              Float
+  zenithStarHipId        Int
+  zenithStarName         String
+  constellationCode      String
+  constellationName      String
+  zenithDistanceDeg      Float
+  magnitude              Float
+  summary                String
+  keywordsCsv            String
+  loveText               String
+  careerText             String
+  moneyText              String
+  astronomyMetaJson      String
+  interpretationMetaJson String
+  catalogVersion         String
+  engineName             String
+  astroSourceLabel       String
+  createdAt              DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([birthProfileId])
+}
+
+model RuleVersion {
+  id          String               @id @default(cuid())
+  name        String
+  description String?
+  status      RuleVersionStatus    @default(DRAFT)
+  publishedAt DateTime?
+  createdById String
+  createdBy   User                 @relation("RuleVersionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  rules       InterpretationRule[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+model InterpretationRule {
+  id                String      @id @default(cuid())
+  ruleVersionId     String
+  ruleVersion       RuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Cascade)
+  constellationCode String
+  title             String
+  keywordsCsv       String
+  generalText       String
+  loveText          String
+  careerText        String
+  moneyText         String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@unique([ruleVersionId, constellationCode])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  adminUser   User     @relation("AuditAdmin", fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String
+  targetType  String
+  targetId    String?
+  payloadJson String?
+  createdAt   DateTime @default(now())
+
+  @@index([adminUserId, createdAt])
+  @@index([targetType, targetId])
+}

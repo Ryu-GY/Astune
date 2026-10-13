@@ -1,0 +1,27 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+build/
+dist/
+
+# --- Environment Variables (CRITICAL) ---
+# 민감한 정보가 포함된 파일은 절대 커밋하지 않습니다.
+.env
+.env.local
+.env.*.local
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
+
+# --- Project Specific (Astune) ---
+# 대용량 천문 데이터 파일이나 로그 파일
+*.log
+data/*.csv
+data/*.bsp
+!data/.gitkeep

@@ -36,6 +36,8 @@ htmlcov/
 *.sqlite3
 *.sqlite-*
 *.sqlite3-*
+*.bsp
+*.bsp.download
 *.log
 .audit-tmp/
 

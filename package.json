@@ -1,0 +1,39 @@
+{
+  "name": "astune",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "prisma generate && next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "db:generate": "prisma generate",
+    "db:push": "node --env-file=.env scripts/prepare-sqlite.mjs && prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "backend:sync": "uv sync --project astune-backend",
+    "backend:data": "uv run --directory astune-backend python -m app.astro.prepare_data",
+    "backend:dev": "uv run --directory astune-backend uvicorn app.main:app --host 127.0.0.1 --port 8000",
+    "backend:test": "uv run --directory astune-backend pytest"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "luxon": "^3.7.0",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.7.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "prisma": "^6.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

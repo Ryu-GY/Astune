@@ -1,0 +1,11 @@
+hip_id,name,ra_hours,dec_degrees,magnitude,constellation
+32349,Sirius,6.7525,-16.7161,-1.46,CMa
+30438,Canopus,6.3992,-52.6957,-0.74,Car
+69673,Arcturus,14.2610,19.1825,-0.05,Boo
+91262,Vega,18.6156,38.7837,0.03,Lyr
+24608,Capella,5.2782,45.9980,0.08,Aur
+24436,Rigel,5.2423,-8.2016,0.13,Ori
+37279,Procyon,7.6550,5.2250,0.37,CMi
+113368,Fomalhaut,22.9608,-29.6222,1.16,PsA
+102098,Deneb,20.6905,45.2803,1.25,Cyg
+677,Alpheratz,0.1398,29.0904,2.07,And

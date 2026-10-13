@@ -1,5 +1,5 @@
 def main():
-    print("Hello from astra-backend!")
+    print("Hello from astune-backend!")
 
 
 if __name__ == "__main__":
