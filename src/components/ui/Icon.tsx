@@ -1,7 +1,8 @@
 import type { CSSProperties } from "react";
 
-export type IconName = "star" | "arrow" | "home" | "book" | "pin" | "heart" | "work" | "coins" | "close" | "check";
+export type IconName = "star" | "sun" | "arrow" | "home" | "book" | "pin" | "heart" | "work" | "coins" | "close" | "check";
 const paths: Record<Exclude<IconName, "star">, string> = {
+  sun: "M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0ZM12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5",
   arrow: "M4 12h16m-6-6 6 6-6 6",
   home: "m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",
   book: "M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15",

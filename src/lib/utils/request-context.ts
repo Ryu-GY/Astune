@@ -42,7 +42,7 @@ export function finishRequest(request: Request, response: Response) {
   const path = new URL(request.url).pathname;
   const route = path.replace(/(\/readings\/)(?!preview$)[^/]+$/, "$1[id]")
     .replace(/(\/rule-versions\/)[^/]+/, "$1[id]").replace(/(\/rules\/)[^/]+$/, "$1[ruleId]");
-  const safeRoute = /^\/api\/v1\/(locations\/resolve|birth-profiles|me\/readings|readings(?:\/preview|\/\[id\])?|admin\/(?:audit-logs|rule-versions(?:\/\[id\]\/(?:publish|rules(?:\/\[ruleId\])?))?))$/.test(route) ? route : "other";
+  const safeRoute = /^\/api\/v1\/(locations\/resolve|horoscopes\/daily|birth-profiles|me\/readings|readings(?:\/preview|\/\[id\])?|admin\/(?:audit-logs|rule-versions(?:\/\[id\]\/(?:publish|rules(?:\/\[ruleId\])?))?))$/.test(route) ? route : "other";
   console.info(JSON.stringify({ event: "request.completed", service: "next", requestId: trace.requestId,
     route: safeRoute, method: ["GET", "POST", "PUT", "PATCH", "DELETE"].includes(request.method) ? request.method : "other",
     status: response.status, durationMs, stages, ...(trace.errorCode ? { errorCode: trace.errorCode } : {}),

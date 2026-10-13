@@ -79,6 +79,24 @@
 
 FastAPI의 같은 POST 경로는 `query`, `country_code`, `limit`, `latitude`, `longitude`, `timezone`, `allow_external`을 받습니다. 결과는 `data.items`, `cache_hit`, `manual_input_hint`이며 후보 필드도 `display_name`, `country_code`, `timezone_source` 등 snake_case입니다.
 
+도시 검색 화면은 나라·도시를 입력받아 위치 해석 API에 `allowExternal: true`를 전달합니다. 결과에서 사용자가 고른 도시의 `latitude`, `longitude`, `timezone`, `displayName`을 미리보기 입력에 사용합니다. 검색어만 입력했거나 나라·도시를 변경한 상태에서는 이전 선택의 좌표를 사용하지 않습니다.
+
+## 오늘의 운세
+
+`POST /api/v1/horoscopes/daily`, 인증 불필요. `{ "birthDate": "1995-05-05" }`만 받습니다. 시간·도시·좌표는 필요하지 않으며 입력은 저장하지 않습니다. 잘못된 날짜는 `400 VALIDATION_ERROR`, 한국 시간 기준 미래 생일은 `422 BIRTH_DATE_IN_FUTURE`입니다.
+
+`data.horoscope`는 한국 시간 기준 `date`, `timeZone`, 다음 자정 `refreshAt`, `sign`(별자리명·기호·생일 범위·상징), `keyword`, `title`, `summary`, `sections`(연애·일·금전), `action`, `lucky`(색·숫자)를 반환합니다. 동일 별자리·동일 날짜에는 같은 운세이며 날짜가 바뀌면 내용이 갱신됩니다. 응답은 `Cache-Control: no-store`입니다.
+
+`/horoscope` 화면은 최근 저장한 출생 정보의 양력 생년월일을 자동으로 적용합니다. 다른 저장 정보를 선택하거나 생일을 직접 입력할 수도 있습니다. 한국 시간 자정 및 탭 복귀 시 오늘 날짜를 확인해 갱신합니다. 외부 운세 API나 유료 서비스 대신 자체 작성한 상징적 운세 문구를 사용하며, 실제 행성 위치 계산에 따른 예측은 아닙니다.
+
+## 저장한 출생 정보
+
+로그인이 필요한 `GET /api/v1/birth-profiles`는 본인의 출생 정보 목록을, `POST /api/v1/birth-profiles`는 새 출생 정보를 저장합니다. POST는 미리보기 입력과 `profileLabel`을 받으며 리딩을 생성하지 않습니다.
+
+`GET /api/v1/birth-profiles/{id}`는 `data.birthProfile`에 `{ id, label, input }`을 반환합니다. 본인 소유만 조회할 수 있고 존재하지 않거나 다른 사용자의 정보는 관리자에게도 `404 PROFILE_NOT_FOUND`를 반환합니다. 비로그인 요청은 `401`입니다.
+
+`/account`의 **내 정보** 화면에서 저장한 항목을 선택하면 `/readings/preview?birthProfileId={id}`에서 조회한 입력을 불러옵니다. 저장된 출생 시각(초 포함), 좌표, 시간대, 서머타임 선택을 그대로 재사용합니다.
+
 ## 통합 리딩 미리보기
 
 `POST /api/v1/readings/preview`, 인증 불필요. 사용자·출생 프로필·리딩을 DB에 저장하지 않습니다. database 모드에서는 게시 규칙만 읽습니다.
@@ -102,7 +120,7 @@ FastAPI의 같은 POST 경로는 `query`, `country_code`, `limit`, `latitude`, `
 | `latitude`, `longitude` | 필수 숫자 좌표 |
 | `locationName` | 선택 표시명, 최대 120자 |
 | `name` | 선택 이름, 1~50자 |
-| `maxMagnitude` | 선택, -2~5.5, 기본 2.0 |
+| `maxMagnitude` | 선택, -2~5.5, 기본 2.5 (93개 개별 해설 제공) |
 | `dstFold` | 선택, 0 또는 1. DST 중복 시각에는 필수 |
 
 기획서의 분리 입력 `birthDate: "1995-05-05"`, `birthTimeLocal: "15:00:00"`도 지원합니다. 이 형식에서는 `locationName`도 필수입니다. 같은 계산·해석 경로를 사용합니다. 잘못된 날짜와 생략된 현지 시각은 거절합니다. 다만 `birthTimeUnknown: true`를 명시하면 낮 12시를 기준으로 계산하고 `dstFold`는 사용하지 않습니다. 이때 `calculationNotice`와 화면 경고로 실제 대표 별·해석·점수가 달라질 수 있음을 안내합니다.
@@ -118,7 +136,7 @@ FastAPI의 같은 POST 경로는 `query`, `country_code`, `limit`, `latitude`, `
 
 섹션은 `overview`, `personality`, `love`, `career`, `money` 순서이며 각각 `title`, `content`, `sortOrder`, `sourceRuleId`, `sourceScope`를 포함합니다. 점수는 `personality`, `love`, `career`, `money`의 정수 0~100 및 등급입니다. 해석과 점수는 상징적 규칙이며 preview의 `readingId`는 없습니다.
 
-위 예제는 기본 등급 2.0에서 Capella(HIP 24608), 고도 약 81.564°를 반환합니다. 최대 등급 5.5에서는 후보 집합이 달라집니다. 문구는 게시 규칙에 따라 달라집니다.
+위 예제는 명시한 등급 2.0에서 Capella(HIP 24608), 고도 약 81.564°를 반환합니다. 생략 시 기본 등급은 2.5이며 후보가 49개에서 93개로 확대됩니다. 최대 등급 5.5에서는 후보 집합이 더 넓어지고 개별 해설이 없는 별은 미준비 안내를 받습니다. 해설은 HIP ID가 일치하는 별 규칙에서 선택하며 별자리 규칙을 대신 적용하지 않습니다. 문구는 게시 규칙에 따라 달라집니다.
 
 FastAPI는 `birth_date`, `birth_time_local`(호환 별칭 `birth_time`), `latitude`, `longitude`, `timezone`, `location_name`, `max_magnitude`, `dst_fold`을 받습니다. 좌표 대신 `city_name`과 선택적 `country_code`도 가능하며 시간대를 생략하면 추론합니다. `data`는 `selected_star`, `selected_constellation`, `metrics`, `astronomy_meta`, `local_datetime`, `utc_datetime`, `resolved_location`입니다. 해석·점수는 포함하지 않습니다.
 

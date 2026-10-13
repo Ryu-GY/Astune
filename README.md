@@ -66,7 +66,7 @@ npm run backend:catalog -- --download
 
 - T101 완료: 31개 샘플 → 2,848개 성표, 재생성 도구, 메타데이터 무결성 검증, 좌표 기준 시점·고유운동·시차 반영.
 - T201 완료: DB·메모리의 전역/성좌/별 규칙과 우선순위·성향 문구 정렬, 단일 게시 버전 제약, 동시 게시·실패 롤백 검증.
-- T202 완료: 16개 성좌의 5개 해석 문구, 공통 fallback, 베텔게우스 별 규칙을 하나의 세트로 관리하며 builtin과 DB seed에서 공유.
+- T202 갱신: 93개 개별 별의 HIP ID별 5영역 해설을 builtin과 DB seed에서 공유. 별자리 공통 해석과 실천 조언을 제거하고 영역별 3문단의 성향·행동·내적 긴장 해설을 제공.
 - T203 완료: 두 규칙 소스의 미리보기 5개 섹션·4개 점수·적용 규칙 ID 일치 및 Next.js 핸들러 응답 검증.
 - T301 완료: 위치 POST의 query·countryCode·limit·직접 좌표·candidates 계약, 직접 입력 안내, 공개 envelope와 요청 ID 연결.
 - T302 완료: 저장 없는 공개 preview의 계산·해석 연동과 새 응답을 읽는 화면 검증.
@@ -113,9 +113,9 @@ npm run db:seed
 
 마이그레이션은 기존 규칙의 ID·문구를 보존하며 `constellationCode=default`를 `scopeType=global`로 전환합니다. 중복 게시 버전이 있다면 `publishedAt` 내림차순, ID 오름차순의 첫 버전을 유지하고 나머지는 `ARCHIVED`로 보관합니다. 범위와 우선순위 CHECK 및 단일 게시 부분 고유 인덱스는 SQL 마이그레이션에 있습니다. `npm run db:push`도 이제 마이그레이션을 실행하는 별칭입니다. 직접 `prisma db push`를 쓰면 이 제약이 보존되지 않을 수 있습니다.
 
-DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변경하고 Next.js를 재시작합니다. 범위는 `global`, `constellation`(3글자 성좌 코드), `star`(HIP ID)이며 별 → 성좌 → 전역 → 내장 fallback 순서로 섹션별 문구를 선택합니다. 같은 범위에서는 높은 `priority`가 먼저이고 동점은 규칙 ID 순입니다. 우선순위는 -32768~32767 정수이며 빈 섹션은 다음 규칙으로 넘어갑니다. `personalityText`도 DB에 저장됩니다.
+DB 규칙을 사용하려면 `.env`에서 `ASTUNE_RULE_SOURCE=database`로 변경하고 Next.js를 재시작합니다. HIP ID가 일치하는 `star` → `global` → 내장 미준비 안내 순서로 섹션별 문구를 선택합니다. 과거 `constellation` 규칙은 이력에 보존하되 새 해석의 본문·점수·매칭 ID에서 제외합니다. 같은 범위에서는 높은 `priority`가 먼저이고 동점은 규칙 ID 순입니다. 우선순위는 -32768~32767 정수이며 빈 섹션은 다음 규칙으로 넘어갑니다. `personalityText`도 DB에 저장됩니다.
 
-seed는 16개 성좌·공통·별 규칙을 초안으로 만들고 게시 버전이 없는 경우에만 게시합니다. 기존 게시 버전을 덮어쓰지 않으며 재실행해도 수정된 문구와 게시 이력을 보존합니다. 기존 게시 버전이 있으면 상세 해석을 담은 새 `2026Q4_v2` 초안을 확인한 뒤 관리자 화면에서 게시하세요. 게시는 이전 버전 보관과 감사 기록을 같은 트랜잭션으로 처리하며, 게시·보관된 버전 수정은 409로 거절합니다.
+seed는 93개 별 전용 규칙과 미준비 안내를 초안으로 만들고 게시 버전이 없는 경우에만 게시합니다. 기존 게시 버전을 덮어쓰지 않으며 재실행해도 수정된 문구와 게시 이력을 보존합니다. 기존 게시 버전이 있으면 개별 별의 상세 해설을 담은 새 `2026Q4_v3` 초안을 확인한 뒤 관리자 화면에서 게시하세요. 게시는 이전 버전 보관과 감사 기록을 같은 트랜잭션으로 처리하며, 게시·보관된 버전 수정은 409로 거절합니다.
 
 관리자 규칙 생성 `POST /api/v1/admin/rule-versions/{id}/rules`는 기존 평면 문구 필드와 아래 구조를 지원합니다. 존재하지 않는 범위 조합, 우선순위, 템플릿 변수와 빈 규칙은 400입니다.
 
@@ -126,7 +126,7 @@ seed는 16개 성좌·공통·별 규칙을 초안으로 만들고 게시 버전
   "starId": 27989,
   "priority": 200,
   "keywords": ["몰입"],
-  "templates": { "personality": "{starName}의 상징에서 집중하는 성향을 돌아보세요." }
+  "templates": { "personality": "{starName}의 상징은 자신의 확신이 생긴 대상에 깊이 관여하는 집중입니다." }
 }
 ```
 
@@ -150,7 +150,7 @@ seed는 16개 성좌·공통·별 규칙을 초안으로 만들고 게시 버전
 }
 ```
 
-`POST /api/v1/readings/preview`에 전달합니다. 해석 코드의 `birthDate` + `birthTimeLocal` 입력도 지원합니다. 최대 등급은 -2~5.5, 기본값은 2.0입니다. 5.5를 초과하면 카탈로그 범위 밖이므로 검증 오류를 반환합니다. 공개 응답은 `{ success, data, meta: { requestId } }`이며 `data`에 `zenithStar`, `reading`, `astronomyMeta`, `interpretation`이 있습니다. 오류는 `{ success: false, error, meta }`입니다. 위치 POST·오류·내부 snake_case와의 차이는 [API 계약](docs/api.md)에 정리했습니다.
+`POST /api/v1/readings/preview`에 전달합니다. 해석 코드의 `birthDate` + `birthTimeLocal` 입력도 지원합니다. 최대 등급은 -2~5.5, 기본값은 2.5입니다. 기본 후보 93개는 모두 고유 해설을 제공하며, 2.5보다 넓힌 계산 범위에서 해설이 없는 별은 미준비 상태를 명시합니다. 5.5를 초과하면 카탈로그 범위 밖이므로 검증 오류를 반환합니다. 공개 응답은 `{ success, data, meta: { requestId } }`이며 `data`에 `zenithStar`, `reading`, `astronomyMeta`, `interpretation`이 있습니다. 오류는 `{ success: false, error, meta }`입니다. 위치 POST·오류·내부 snake_case와의 차이는 [API 계약](docs/api.md)에 정리했습니다.
 
 시간은 UTC 오프셋 없는 현지시각으로 전달합니다. 서머타임으로 같은 시각이 두 번 발생하면 `dstFold: 0` 또는 `1`을 지정해야 합니다. 존재하지 않는 시각은 오류로 반환합니다. DE421의 날짜 범위 밖 요청도 명시적으로 거절합니다.
 
