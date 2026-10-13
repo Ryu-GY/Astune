@@ -1,23 +1,8 @@
-export default function MyReadingsPage() {
-  return (
-    <section className="grid" style={{ gap: 20 }}>
-      <div>
-        <span className="badge">My Readings</span>
-        <h1 className="section-title" style={{ marginTop: 12 }}>
-          저장된 리딩
-        </h1>
-        <p className="help">
-          이 스타터에서는 API만 먼저 준비했습니다. 정식 인증을 붙인 뒤
-          <code> /api/v1/me/readings </code>와 연결하면 됩니다.
-        </p>
-      </div>
+import { SavedReadings } from "@/components/reading/SavedReadings";
 
-      <div className="card stack">
-        <h2 style={{ margin: 0 }}>개발용 호출 예시</h2>
-        <pre>{`curl -H "x-user-id: demo-user" \
-  -H "x-user-email: user@astune.local" \
-  http://localhost:3000/api/v1/me/readings`}</pre>
-      </div>
-    </section>
-  );
+export default function MyReadingsPage() {
+  return <section>
+    <header className="collection-heading"><p className="eyebrow">MY STAR JOURNAL</p><h1>내가 간직한 별의 이야기</h1><p>다시 꺼내 읽고 싶은 순간들을 이곳에.<br />리딩은 현재 사용 중인 브라우저에 보관됩니다.</p></header>
+    <SavedReadings />
+  </section>;
 }

@@ -1,211 +1,108 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ReadingCard } from "@/components/reading/ReadingCard";
+import { StarFeature } from "@/components/reading/StarFeature";
+import { Icon } from "@/components/ui/Icon";
 import type { ReadingPreviewResponse } from "@/types/reading";
 
-const DEFAULT_BODY = {
-  name: "홍길동",
-  birthAtLocal: "1995-05-05T15:00:00",
-  timezone: "Asia/Seoul",
-  locationName: "Seoul",
-  latitude: 37.5665,
-  longitude: 126.978,
-  maxMagnitude: 2.0
-};
+type City = { name: string; country: string; timezone: string; latitude: number; longitude: number; aliases?: string[] };
 
-export function PreviewReadingForm() {
-  const [body, setBody] = useState(DEFAULT_BODY);
+export function PreviewReadingForm({ cities }: { cities: City[] }) {
+  const [birthDate, setBirthDate] = useState("1995-05-05");
+  const [birthTime, setBirthTime] = useState("15:00");
+  const [cityName, setCityName] = useState("Seoul");
+  const [manualCity, setManualCity] = useState({ locationName: "", timezone: "Asia/Seoul", latitude: "37.5665", longitude: "126.978" });
+  const [name, setName] = useState("");
+  const [maxMagnitude, setMaxMagnitude] = useState("2");
+  const [dstFold, setDstFold] = useState("");
   const [result, setResult] = useState<ReadingPreviewResponse | null>(null);
-  const [rawResponse, setRawResponse] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [dstFold, setDstFold] = useState<string>("");
+  const resultRef = useRef<HTMLDivElement>(null);
+  const isManual = cityName === "manual";
 
-  const curlExample = useMemo(
-    () =>
-      `curl -X POST http://localhost:3000/api/v1/readings/preview \
-` +
-      `  -H "Content-Type: application/json" \
-` +
-      `  -d '${JSON.stringify({ ...body, dstFold: dstFold === "" ? undefined : Number(dstFold) })}'`,
-    [body, dstFold]
-  );
+  useEffect(() => {
+    if (result) {
+      resultRef.current?.focus({ preventScroll: true });
+      resultRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+    }
+  }, [result]);
 
-  const update = (key: keyof typeof DEFAULT_BODY, value: string) => {
-    setBody((prev) => {
-      if (key === "latitude" || key === "longitude" || key === "maxMagnitude") {
-        return { ...prev, [key]: Number(value) };
-      }
-
-      return { ...prev, [key]: value };
-    });
-  };
-
-  const submit = async (event: React.FormEvent) => {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
     setResult(null);
-
+    const city = cities.find(item => item.name === cityName);
+    const location = isManual
+      ? { ...manualCity, latitude: Number(manualCity.latitude), longitude: Number(manualCity.longitude) }
+      : city && { locationName: city.aliases?.[0] || city.name, timezone: city.timezone, latitude: city.latitude, longitude: city.longitude };
+    if (!location) {
+      setError("태어난 도시를 선택해 주세요.");
+      setLoading(false);
+      return;
+    }
     try {
       const response = await fetch("/api/v1/readings/preview", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ ...body, dstFold: dstFold === "" ? undefined : Number(dstFold) })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...location,
+          ...(name.trim() ? { name: name.trim() } : {}),
+          birthAtLocal: birthDate + "T" + birthTime + ":00",
+          maxMagnitude: Number(maxMagnitude),
+          ...(dstFold !== "" ? { dstFold: Number(dstFold) } : {}),
+        }),
       });
-
-      const text = await response.text();
-      setRawResponse(text);
-
+      const json = await response.json();
       if (!response.ok) {
-        let message = text;
-        try { message = JSON.parse(text).error?.message || text; } catch { /* Keep non-JSON error text. */ }
-        throw new Error(message);
+        throw new Error(response.status >= 500
+          ? "별을 찾는 서비스에 잠시 연결할 수 없어요. 잠시 후 다시 시도해 주세요."
+          : json.error?.message || "별을 찾지 못했어요. 입력한 정보를 확인하고 다시 시도해 주세요.");
       }
-
-      const json = JSON.parse(text) as ReadingPreviewResponse;
-      setResult(json);
+      setResult(json as ReadingPreviewResponse);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "알 수 없는 오류");
+      setError(caught instanceof Error && caught.message !== "Failed to fetch" ? caught.message : "연결이 잠시 끊겼어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  return (
-    <div className="grid grid-2" style={{ alignItems: "start" }}>
-      <form className="card stack" onSubmit={submit}>
-        <div>
-          <label className="label" htmlFor="name">
-            이름
-          </label>
-          <input
-            className="input"
-            id="name"
-            value={body.name}
-            onChange={(event) => update("name", event.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="label" htmlFor="birthAtLocal">
-            출생 일시 (현지시각)
-          </label>
-          <input
-            className="input"
-            id="birthAtLocal"
-            type="datetime-local"
-            value={body.birthAtLocal}
-            onChange={(event) => update("birthAtLocal", event.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-2">
-          <div>
-            <label className="label" htmlFor="timezone">
-              시간대
-            </label>
-            <input
-              className="input"
-              id="timezone"
-              value={body.timezone}
-              onChange={(event) => update("timezone", event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="label" htmlFor="locationName">
-              장소 이름
-            </label>
-            <input
-              className="input"
-              id="locationName"
-              value={body.locationName}
-              onChange={(event) => update("locationName", event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-2">
-          <div>
-            <label className="label" htmlFor="latitude">
-              위도
-            </label>
-            <input
-              className="input"
-              id="latitude"
-              type="number"
-              step="0.0001"
-              value={body.latitude}
-              onChange={(event) => update("latitude", event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="label" htmlFor="longitude">
-              경도
-            </label>
-            <input
-              className="input"
-              id="longitude"
-              type="number"
-              step="0.0001"
-              value={body.longitude}
-              onChange={(event) => update("longitude", event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="label" htmlFor="maxMagnitude">
-            계산 대상 최대 등급
-          </label>
-          <input
-            className="input"
-            id="maxMagnitude"
-            type="number"
-            min="-2"
-            max="5.5"
-            step="0.1"
-            value={body.maxMagnitude}
-            onChange={(event) => update("maxMagnitude", event.target.value)}
-          />
-          <p className="help">
-            값이 낮을수록 더 밝은 별만 사용합니다. 기본값은 2.0이며, 최대 5.5등급까지 계산할 수 있습니다.
-          </p>
-        </div>
-
-        <div>
-          <label className="label" htmlFor="dstFold">서머타임으로 출생 시간이 두 번 있는 경우</label>
-          <select className="select" id="dstFold" value={dstFold} onChange={(event) => setDstFold(event.target.value)}>
-            <option value="">해당 없음 / 확인 필요</option>
-            <option value="0">첫 번째 시각</option>
-            <option value="1">두 번째 시각</option>
-          </select>
-        </div>
-        <button className="button" disabled={loading} type="submit">
-          {loading ? "계산 중..." : "미리보기 생성"}
-        </button>
-
-        {error ? <p className="error">{error}</p> : null}
-
-        <div className="stack">
-          <h3 style={{ margin: 0 }}>API 호출 예시</h3>
-          <pre>{curlExample}</pre>
-        </div>
-      </form>
-
-      <div className="grid" style={{ gap: 20 }}>
-        {result ? <ReadingCard data={result} /> : null}
-
-        <div className="card stack">
-          <h2 style={{ margin: 0 }}>원본 응답</h2>
-          <pre>{rawResponse || "아직 호출 전입니다."}</pre>
-        </div>
+  return <div className="reading-workspace">
+    <div className="reading-start">
+      <div className="intro">
+        <div className="intro-kicker"><span>A SMALL STAR<br />A BRIGHTER YOU</span><span className="fine-rule" /><Icon name="star" /></div>
+        <h1>태어난 순간,<br /><span>당신의 별을 만나다.</span></h1>
+        <p>출생 시각과 장소로 찾는 나의 대표 별</p>
       </div>
+      <form className="birth-form" onSubmit={submit} aria-label="출생 정보 입력" aria-busy={loading}>
+        <fieldset disabled={loading}>
+          <legend className="sr-only">나의 출생 정보</legend>
+          <div className="birth-fields">
+            <div><label className="label" htmlFor="birth-date">생년월일</label><input className="input" id="birth-date" type="date" required value={birthDate} onChange={event => setBirthDate(event.target.value)} /></div>
+            <div><label className="label" htmlFor="birth-time">태어난 시간</label><input className="input" id="birth-time" type="time" required value={birthTime} onChange={event => setBirthTime(event.target.value)} /></div>
+          </div>
+          <div className="city-field"><label className="label" htmlFor="birth-city">태어난 도시</label><div className="select-wrap"><select className="select" id="birth-city" value={cityName} onChange={event => setCityName(event.target.value)}>{cities.map(city => <option value={city.name} key={city.name}>{city.aliases?.[0] || city.name} · {city.country}</option>)}<option value="manual">다른 도시 · 직접 입력</option></select><Icon name="pin" /></div></div>
+          {isManual ? <div className="manual-location">
+            <div><label className="label" htmlFor="location-name">도시 이름</label><input id="location-name" className="input" required maxLength={120} value={manualCity.locationName} onChange={event => setManualCity({ ...manualCity, locationName: event.target.value })} /></div>
+            <div><label className="label" htmlFor="timezone">시간대</label><input id="timezone" className="input" required placeholder="Asia/Seoul" value={manualCity.timezone} onChange={event => setManualCity({ ...manualCity, timezone: event.target.value })} /></div>
+            <div className="birth-fields"><div><label className="label" htmlFor="latitude">위도</label><input id="latitude" className="input" type="number" required min={-90} max={90} step="any" value={manualCity.latitude} onChange={event => setManualCity({ ...manualCity, latitude: event.target.value })} /></div><div><label className="label" htmlFor="longitude">경도</label><input id="longitude" className="input" type="number" required min={-180} max={180} step="any" value={manualCity.longitude} onChange={event => setManualCity({ ...manualCity, longitude: event.target.value })} /></div></div>
+          </div> : null}
+          <details className="advanced-options"><summary>세부 설정 <span>이름 · 별의 밝기 · 서머타임</span></summary><div className="advanced-content">
+            <div><label htmlFor="name" className="label">이름 <span className="optional">선택</span></label><input className="input" id="name" value={name} maxLength={50} onChange={event => setName(event.target.value)} placeholder="어떻게 불러드릴까요?" /></div>
+            <div><label htmlFor="maxMagnitude" className="label">계산할 별의 최대 등급</label><input id="maxMagnitude" className="input" type="number" min="-2" max="5.5" step="0.1" required value={maxMagnitude} onChange={event => setMaxMagnitude(event.target.value)} /><p className="help">기본 2.0 · 최대 5.5등급까지. 숫자가 작을수록 밝은 별을 찾습니다.</p></div>
+            <div><label htmlFor="dstFold" className="label">서머타임으로 출생 시간이 겹치는 경우</label><select className="select" id="dstFold" value={dstFold} onChange={event => setDstFold(event.target.value)}><option value="">해당 없음 / 확인 필요</option><option value="0">첫 번째 시각</option><option value="1">두 번째 시각</option></select></div>
+          </div></details>
+          <button className="button find-star-button" type="submit">{loading ? <><span className="loading-star"><Icon name="star" /></span>그날의 하늘을 살펴보는 중</> : <>나의 별 찾기 <Icon name="arrow" /></>}</button>
+        </fieldset>
+        <div className="form-feedback" aria-live="polite">{loading ? <p className="help">잠시만 기다려 주세요.</p> : null}{error ? <p className="error" role="alert">{error}</p> : null}</div>
+        <p className="form-note">태어난 곳의 현지 시각을 입력해 주세요.</p>
+        <div className="form-signature" aria-hidden="true"><span>SAME SKY, A BRIGHTER YOU</span><span className="fine-rule" /></div>
+      </form>
     </div>
-  );
+    <div className="reading-display" ref={resultRef} tabIndex={-1} aria-label={result ? "나의 별 리딩 결과" : "별 리딩 예시"}>
+      {result ? <ReadingCard data={result} key={JSON.stringify(result.input)} /> : <StarFeature />}
+    </div>
+  </div>;
 }
