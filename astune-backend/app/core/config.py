@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     app_host: str = Field(default="127.0.0.1", alias="APP_HOST")
     app_port: int = Field(default=8000, alias="APP_PORT")
     app_secret: str = Field(default="change-me", alias="APP_SECRET")
+    internal_api_key: str = Field(default="", alias="ASTUNE_ASTRO_API_KEY", repr=False)
+    timezonefinder_in_memory: bool = Field(default=False, alias="TIMEZONEFINDER_IN_MEMORY")
     app_cors_origins: str = Field(
         default="http://127.0.0.1:3000,http://localhost:3000",
         alias="APP_CORS_ORIGINS",
@@ -47,6 +49,12 @@ class Settings(BaseSettings):
         default="admin@example.com",
         alias="ADMIN_BOOTSTRAP_EMAIL",
     )
+
+    @model_validator(mode="after")
+    def require_production_key(self):
+        if self.app_env in {"production", "staging"} and len(self.internal_api_key) < 32:
+            raise ValueError("ASTUNE_ASTRO_API_KEY must contain at least 32 characters in production/staging")
+        return self
 
     @property
     def cors_origins(self) -> list[str]:

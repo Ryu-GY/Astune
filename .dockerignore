@@ -1,0 +1,16 @@
+.git
+.vercel
+.agents
+.audit-tmp
+.env*
+**/.env*
+node_modules
+.next*
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/*.db
+**/*.db-*
+**/*.astune-backup.json
+astune-backend/data/astro/hip_main.dat
+astune-backend/data/astro/*.bsp

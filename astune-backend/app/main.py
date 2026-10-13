@@ -7,6 +7,7 @@ from app.api.v1.router import router as v1_router
 from app.core.config import get_settings
 from app.core.exception_handlers import register_exception_handlers
 from app.middlewares.request_id import RequestIdMiddleware
+from app.middlewares.internal_auth import InternalAuthMiddleware
 from app.services.preview_service import get_astronomy_engine
 from app.services.location_service import get_location_resolver
 
@@ -35,11 +36,13 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         description="Astune 내부 위치 해석·천문 계산 API입니다. snake_case 요청과 success/data 응답을 사용하며, 리딩 해석과 저장은 Next.js 공개 API가 담당합니다. X-Request-ID를 응답 헤더와 오류의 error.request_id에 반환합니다.",
         version="0.1.0",
-        docs_url="/docs",
-        redoc_url="/redoc",
+        docs_url="/docs" if settings.app_env == "local" else None,
+        redoc_url="/redoc" if settings.app_env == "local" else None,
+        openapi_url="/openapi.json" if settings.app_env == "local" else None,
         lifespan=lifespan,
     )
 
+    app.add_middleware(InternalAuthMiddleware, api_key=settings.internal_api_key)
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
         CORSMiddleware,

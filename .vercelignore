@@ -1,0 +1,14 @@
+.git
+.audit-tmp
+.env*
+!.env.example
+.next*
+node_modules
+astune-backend
+*.db
+*.db-*
+*.astune-backup.json
+docs
+tests
+compose*.yml
+Dockerfile*

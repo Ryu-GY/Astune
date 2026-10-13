@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 import type { ResolveLocationBody } from "@/lib/validation/location";
-import { traceStage, upstreamHeaders } from "@/lib/utils/request-context";
+import { traceStage } from "@/lib/utils/request-context";
+import { astronomyTransport } from "@/lib/astronomy/transport";
 import { publicError, errorPolicy } from "@/lib/errors/error-policy";
 
 const responseSchema = z.object({
@@ -27,8 +28,7 @@ async function resolveLocations(input: ResolveLocationBody, fetcher: typeof fetc
   let response: Response;
   try {
     response = await fetcher(new URL("/api/v1/locations/resolve", process.env.ASTUNE_ASTRO_API_URL || "http://127.0.0.1:8000"), {
-      method: "POST", headers: upstreamHeaders(), cache: "no-store",
-      signal: AbortSignal.timeout(15000),
+      method: "POST", cache: "no-store", ...astronomyTransport(15000),
       body: JSON.stringify({query: input.query, country_code: input.countryCode, limit: input.limit,
         latitude: input.latitude, longitude: input.longitude, timezone: input.timezone,
         allow_external: input.allowExternal}),
@@ -41,6 +41,9 @@ async function resolveLocations(input: ResolveLocationBody, fetcher: typeof fetc
     throw new AppError("위치 검색 응답을 읽을 수 없습니다.", {statusCode: 502, code: "LOCATION_INVALID_RESPONSE"});
   }
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new AppError("위치 검색 서비스를 사용할 수 없습니다.", { statusCode: 503, code: "LOCATION_SERVICE_UNAVAILABLE" });
+    }
     const error = errorSchema.safeParse(raw);
     const result = publicError(error.success && errorPolicy(error.data.error.code) ? error.data.error.code : "LOCATION_INVALID_RESPONSE",
       error.success ? error.data.error.details : undefined);

@@ -75,7 +75,7 @@ class LocationResolver:
     @cached_property
     def timezone_finder(self):
         from timezonefinder import TimezoneFinder
-        return TimezoneFinder(in_memory=True)
+        return TimezoneFinder(in_memory=self.settings.timezonefinder_in_memory)
 
     def infer_timezone(self, latitude: float, longitude: float) -> str:
         def lookup():

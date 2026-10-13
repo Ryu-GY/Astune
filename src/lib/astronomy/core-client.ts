@@ -2,7 +2,8 @@ import { z } from "zod";
 import { AppError } from "@/lib/errors/app-error";
 import type { PreviewReadingInput, AstronomyMeta } from "@/types/reading";
 import type { AstroResult } from "@/lib/readings/types";
-import { recordCalculation, traceStage, upstreamHeaders } from "@/lib/utils/request-context";
+import { recordCalculation, traceStage } from "@/lib/utils/request-context";
+import { astronomyTransport } from "./transport";
 import { publicError, errorPolicy } from "@/lib/errors/error-policy";
 
 const coreResponseSchema = z.object({
@@ -33,8 +34,7 @@ async function calculate(input: PreviewReadingInput, fetcher: typeof fetch): Pro
   let response: Response;
   try {
     response = await fetcher(new URL("/api/v1/readings/preview", origin), {
-      method: "POST", headers: upstreamHeaders(), cache: "no-store",
-      signal: AbortSignal.timeout(30000),
+      method: "POST", cache: "no-store", ...astronomyTransport(30000),
       body: JSON.stringify({
         birth_date: birthDate, birth_time_local: birthTime, timezone: input.timezone,
         location_name: input.locationName || "Coordinates", latitude: input.latitude,
@@ -51,6 +51,9 @@ async function calculate(input: PreviewReadingInput, fetcher: typeof fetch): Pro
     throw new AppError("천문 계산 서버의 응답 형식이 올바르지 않습니다.", { statusCode: 502, code: "ASTRO_INVALID_RESPONSE" });
   }
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new AppError("천문 계산 서비스를 사용할 수 없습니다.", { statusCode: 503, code: "ASTRO_SERVICE_UNAVAILABLE" });
+    }
     const error = coreErrorSchema.safeParse(body);
     const result = publicError(error.success && errorPolicy(error.data.error.code) ? error.data.error.code : "ASTRO_INVALID_RESPONSE",
       error.success ? error.data.error.details : undefined);
