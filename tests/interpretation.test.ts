@@ -22,9 +22,9 @@ const repository = new InMemoryRuleRepository(DEFAULT_RULE_VERSION, DEFAULT_INTE
 test("star, constellation, global rules merge per section with stable scores", async () => {
   const result = await new PreviewReadingService(repository).generate({ input, astro });
   assert.equal(result.sections.length, 5);
-  assert.equal(result.sections.find(s => s.type === "overview")?.sourceRuleId, "ir_star_betelgeuse");
-  assert.equal(result.sections.find(s => s.type === "career")?.sourceRuleId, "ir_constellation_ori");
-  assert.equal(result.sections.find(s => s.type === "money")?.sourceRuleId, "ir_constellation_ori");
+  assert.equal(result.sections.find(s => s.type === "overview")?.sourceRuleId, "ir_star_betelgeuse_v2");
+  assert.equal(result.sections.find(s => s.type === "career")?.sourceRuleId, "ir_constellation_ori_v2");
+  assert.equal(result.sections.find(s => s.type === "money")?.sourceRuleId, "ir_constellation_ori_v2");
   assert.equal(result.scores.length, 4);
   assert(result.scores.every(s => s.score >= 0 && s.score <= 100));
   assert(!result.sections.some(s => /\{\w+\}/.test(s.content)));
@@ -36,8 +36,8 @@ test("star, constellation, global rules merge per section with stable scores", a
 test("Rigel never receives the Betelgeuse star rule", async () => {
   const bundle = await repository.getPublishedRuleBundle({ starId: 24436, constellationCode: "Ori" });
   assert(bundle);
-  assert(!bundle.rules.some(rule => rule.id === "ir_star_betelgeuse"));
-  assert(bundle.rules.some(rule => rule.id === "ir_constellation_ori"));
+  assert(!bundle.rules.some(rule => rule.id === "ir_star_betelgeuse_v2"));
+  assert(bundle.rules.some(rule => rule.id === "ir_constellation_ori_v2"));
 });
 
 test("interpreter rejects inactive versions and excludes unrelated rules from text, scores and IDs", () => {

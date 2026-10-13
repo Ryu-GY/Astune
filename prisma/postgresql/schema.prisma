@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum RuleVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum RuleScope {
+  global
+  constellation
+  star
+}
+
+model User {
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  name               String?
+  role               UserRole         @default(USER)
+  emailVerified      Boolean          @default(false)
+  image              String?
+  sessions           Session[]
+  accounts           Account[]
+  birthProfiles      BirthProfile[]
+  readings           Reading[]
+  createdRuleVersions RuleVersion[]   @relation("RuleVersionCreator")
+  auditLogs          AdminAuditLog[]  @relation("AuditAdmin")
+  createdAt          DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
+}
+
+model BirthProfile {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String
+  birthAtLocal String
+  timezone     String
+  locationName String?
+  latitude     Float
+  longitude    Float
+  displayName  String?
+  dstFold      Int?
+  maxMagnitude Float     @default(2)
+  readings     Reading[]
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+}
+
+model Reading {
+  id                     String       @id @default(cuid())
+  userId                 String?
+  user                   User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  birthProfileId         String?
+  birthProfile           BirthProfile? @relation(fields: [birthProfileId], references: [id], onDelete: SetNull)
+  displayName            String?
+  birthAtLocal           String
+  timezone               String
+  locationName           String?
+  latitude               Float
+  longitude              Float
+  dstFold                Int?
+  maxMagnitude           Float        @default(2)
+  birthTimeUnknown       Boolean      @default(false)
+  inputSnapshotJson      String?
+  previewSnapshotJson    String?
+  zenithStarHipId        Int
+  zenithStarName         String
+  constellationCode      String
+  constellationName      String
+  zenithDistanceDeg      Float
+  magnitude              Float
+  summary                String
+  keywordsCsv            String
+  loveText               String
+  careerText             String
+  moneyText              String
+  astronomyMetaJson      String
+  interpretationMetaJson String
+  catalogVersion         String
+  engineName             String
+  astroSourceLabel       String
+  createdAt              DateTime     @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+  @@index([birthProfileId])
+}
+
+model RuleVersion {
+  id          String               @id @default(cuid())
+  name        String
+  description String?
+  status      RuleVersionStatus    @default(DRAFT)
+  publishedAt DateTime? @db.Timestamptz(3)
+  createdById String
+  createdBy   User                 @relation("RuleVersionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  rules       InterpretationRule[]
+  createdAt   DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime             @updatedAt @db.Timestamptz(3)
+
+  @@index([status, publishedAt])
+}
+
+model InterpretationRule {
+  id                String      @id @default(cuid())
+  ruleVersionId     String
+  ruleVersion       RuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Cascade)
+  scopeType         RuleScope   @default(constellation)
+  constellationCode String?
+  starId            Int?
+  priority          Int         @default(100)
+  title             String
+  keywordsCsv       String
+  generalText       String
+  personalityText   String      @default("")
+  loveText          String
+  careerText        String
+  moneyText         String
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(3)
+
+  @@index([ruleVersionId, scopeType, priority])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  adminUser   User     @relation("AuditAdmin", fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String
+  targetType  String
+  targetId    String?
+  payloadJson String?
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([adminUserId, createdAt])
+  @@index([targetType, targetId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @db.Timestamptz(3)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([identifier])
+}
+
+model RateLimit {
+  id          String @id @default(cuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+}

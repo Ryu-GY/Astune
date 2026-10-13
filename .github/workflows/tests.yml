@@ -45,3 +45,36 @@ jobs:
           ASTUNE_RULE_SOURCE: builtin
           ASTUNE_ALLOW_DEV_AUTH: '0'
         run: npm run build
+
+  postgres-compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      POSTGRES_PASSWORD: disposable-ci-password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare synthetic SQLite transfer
+        env:
+          DATABASE_URL: file:./ci-transfer.db
+        run: |
+          npm run db:generate
+          node --import tsx scripts/verify-postgres-transfer.ts export
+      - name: Start disposable PostgreSQL with Compose
+        run: docker compose -f compose.postgres.yml up -d --wait
+      - name: Migrate and verify real PostgreSQL transfer
+        env:
+          DATABASE_URL: postgresql://astune:disposable-ci-password@127.0.0.1:5432/astune
+        run: |
+          npm run db:generate
+          npm run db:migrate
+          node --import tsx scripts/verify-postgres-transfer.ts verify
+      - name: Stop disposable Compose database
+        if: always()
+        run: docker compose -f compose.postgres.yml down --volumes

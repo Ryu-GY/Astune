@@ -40,7 +40,7 @@ test("all seeded constellations, star and fallback match builtin output through 
     assert.equal(dbResult.interpretation.sections.length, 5);
     assert.equal(dbResult.interpretation.scores.length, 4);
     assert(dbResult.interpretation.sections.every(s => s.content.length > 20 && !/[{}]/.test(s.content)));
-    const expectedId = code === "Oct" ? "ir_global_default" : `ir_constellation_${code.toLowerCase()}`;
+    const expectedId = code === "Oct" ? "ir_global_default_v2" : `ir_constellation_${code.toLowerCase()}_v2`;
     assert(dbResult.interpretation.sections.every(s => s.sourceRuleId === expectedId), code);
   }
   assert.deepEqual(

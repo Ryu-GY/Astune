@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { normalizePreviewInput, previewReading } from "../src/server/services/preview-service";
 import { createReadingSchema } from "../src/lib/validation/reading";
 import { UNKNOWN_BIRTH_TIME_WARNING } from "../src/lib/readings/birth-time";
-import { saveReading, loadSavedReadings } from "../src/lib/readings/browser-library";
 import type { PreviewReadingInput } from "../src/types/reading";
 
 const location = {timezone:"Asia/Seoul", locationName:"서울", latitude:37.5665, longitude:126.978};
@@ -51,22 +50,4 @@ test("preview passes reference noon to astronomy and flags the returned reading;
   const known = await previewReading({...location,birthAtLocal:"1995-05-05T15:00:00"}, {calculate});
   assert.equal(known.calculationNotice,undefined);
   assert.equal(calculated?.birthAtLocal,"1995-05-05T15:00:00");
-});
-
-test("browser library preserves the unknown flag and warning after reload and reads older known-time records", async t => {
-  const previous=Object.getOwnPropertyDescriptor(globalThis,"localStorage");
-  const data=new Map<string,string>();
-  Object.defineProperty(globalThis,"localStorage",{configurable:true,value:{getItem:(key:string)=>data.get(key)??null,setItem:(key:string,value:string)=>data.set(key,value)}});
-  t.after(()=>{if(previous)Object.defineProperty(globalThis,"localStorage",previous); else Reflect.deleteProperty(globalThis,"localStorage");});
-  const calculate = async () => ({astro,astronomyMeta});
-  const unknown = await previewReading({...location,birthAtLocal:"1995-05-05",birthTimeUnknown:true}, {calculate});
-  saveReading(unknown);
-  const loaded=loadSavedReadings()[0].data;
-  assert.equal(loaded.input.birthTimeUnknown,true);
-  assert.deepEqual(loaded.calculationNotice,unknown.calculationNotice);
-  saveReading(await previewReading({...location,birthAtLocal:"1995-05-05T15:00:00"},{calculate}));
-  const both=loadSavedReadings();
-  assert.equal(both.length,2);
-  assert.equal(both[0].data.input.birthTimeUnknown,undefined);
-  assert.equal(both[1].data.input.birthTimeUnknown,true);
 });

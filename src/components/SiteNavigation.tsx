@@ -13,8 +13,8 @@ export function SiteNavigation() {
     <header className="site-header container">
       <Link href="/" className="brand" aria-label="Astune 홈">Astune<Icon name="star" /></Link>
       <nav className="desktop-nav" aria-label="주 메뉴">{items.slice(1).map(item => <Link key={item.href} href={item.href} className={(pathname === item.href || (item.href === "/readings/preview" && pathname === "/")) ? "active" : ""} aria-current={pathname === item.href ? "page" : undefined}>{item.label}</Link>)}</nav>
-      <p className="header-note"><Icon name="star" />당신의 순간이, 하나의 별이 되어</p>
-      <span className="mobile-header-note">A STAR OF YOUR OWN</span>
+      <Link className="header-note" href="/login">로그인 · 계정</Link>
+      <Link className="mobile-header-note" href="/login">로그인 · 계정</Link>
     </header>
     <nav className="mobile-nav" aria-label="모바일 주 메뉴">{items.map(item => <Link key={item.href} href={item.href} className={pathname === item.href ? "active" : ""} aria-current={pathname === item.href ? "page" : undefined}><Icon name={item.icon} /><span>{item.label}</span></Link>)}</nav>
   </>;

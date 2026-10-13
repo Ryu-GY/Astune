@@ -10,6 +10,7 @@
 .aws/
 
 # JavaScript dependencies and build output
+.vercel/
 node_modules/
 .next/
 out/
@@ -47,3 +48,6 @@ astune-backend/data/astro/hip_main.dat
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Database transfers contain private data and must never be committed.
+*.astune-backup.json

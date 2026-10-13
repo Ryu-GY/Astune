@@ -1,15 +1,16 @@
 import type { InterpretationRule, RuleVersion } from "../types";
 import { CONSTELLATION_READINGS } from "./constellation-rules";
+import { detailedTemplates } from "./detailed-templates";
 
 export const DEFAULT_RULE_VERSION: RuleVersion = {
-  id: "rv_builtin_2026q4_v1",
-  versionCode: "2026Q4_v1",
+  id: "rv_builtin_2026q4_v2",
+  versionCode: "2026Q4_v2",
   status: "PUBLISHED",
   publishedAt: "2026-10-13T00:00:00Z",
-  note: "16개 성좌, 베텔게우스 별 규칙, 공통 fallback",
+  note: "16개 성좌, 별 규칙, 공통 fallback의 문단별 상세 해석",
 };
 
-export const DEFAULT_INTERPRETATION_RULES: InterpretationRule[] = [
+const baseRules: InterpretationRule[] = [
   {
     id: "ir_global_default",
     ruleVersionId: DEFAULT_RULE_VERSION.id,
@@ -52,3 +53,8 @@ export const DEFAULT_INTERPRETATION_RULES: InterpretationRule[] = [
     },
   },
 ];
+
+export const DEFAULT_INTERPRETATION_RULES: InterpretationRule[] = baseRules.map(rule => ({
+  ...rule, id: `${rule.id}_v2`,
+  templates: detailedTemplates(rule.templates, rule.scopeType === "star" ? "Ori" : rule.constellationCode || "global"),
+}));

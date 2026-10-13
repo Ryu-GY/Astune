@@ -23,5 +23,5 @@ export async function seedDefaultRules(prisma: PrismaClient, adminUserId: string
       if (!published) await publishInTransaction(tx, version.id, adminUserId);
     }
     return tx.ruleVersion.findUniqueOrThrow({ where: { id: version.id } });
-  });
+  }, { maxWait: 10000, timeout: 60000 });
 }

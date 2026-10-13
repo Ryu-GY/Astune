@@ -43,5 +43,6 @@ export function renderTemplate(template: string, context: TemplateContext): stri
     return value ?? "";
   });
 
-  return rendered.replace(/\s+/g, " ").trim();
+  return rendered.replace(/\r\n?/g, "\n").split(/\n\s*\n/)
+    .map(paragraph => paragraph.replace(/\s+/g, " ").trim()).filter(Boolean).join("\n\n");
 }

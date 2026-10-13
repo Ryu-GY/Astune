@@ -47,7 +47,7 @@ test("Next preview route returns the same structured builtin and DB reading and 
   assert.deepEqual(body.interpretation.sections.map((section: { type: string }) => section.type), ["overview", "personality", "love", "career", "money"]);
   assert.equal(body.interpretation.scores.length, 4);
   assert(body.interpretation.sections.every((section: { content: string }) => section.content.length > 20 && !/[{}]/.test(section.content)));
-  assert(body.interpretation.matchedRuleIds.includes("ir_constellation_aur"));
+  assert(body.interpretation.matchedRuleIds.includes("ir_constellation_aur_v2"));
   assert.equal(body.reading.love, body.interpretation.sections[2].content);
   assert.equal(body.reading.career, body.interpretation.sections[3].content);
   assert.equal(body.reading.money, body.interpretation.sections[4].content);
