@@ -29,6 +29,10 @@ model User {
   email              String           @unique
   name               String?
   role               UserRole         @default(USER)
+  emailVerified      Boolean          @default(false)
+  image              String?
+  sessions           Session[]
+  accounts           Account[]
   birthProfiles      BirthProfile[]
   readings           Reading[]
   createdRuleVersions RuleVersion[]   @relation("RuleVersionCreator")
@@ -47,6 +51,9 @@ model BirthProfile {
   locationName String?
   latitude     Float
   longitude    Float
+  displayName  String?
+  dstFold      Int?
+  maxMagnitude Float     @default(2)
   readings     Reading[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -66,6 +73,11 @@ model Reading {
   locationName           String?
   latitude               Float
   longitude              Float
+  dstFold                Int?
+  maxMagnitude           Float        @default(2)
+  birthTimeUnknown       Boolean      @default(false)
+  inputSnapshotJson      String?
+  previewSnapshotJson    String?
   zenithStarHipId        Int
   zenithStarName         String
   constellationCode      String
@@ -136,4 +148,56 @@ model AdminAuditLog {
 
   @@index([adminUserId, createdAt])
   @@index([targetType, targetId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model RateLimit {
+  id          String @id @default(cuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
 }

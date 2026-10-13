@@ -114,6 +114,7 @@ test("concurrent publishers leave one active version; failed publication rolls b
   assert.equal(await db.prisma.ruleVersion.count({ where: { status: "PUBLISHED" } }), 1);
   const active = await db.prisma.ruleVersion.findFirstOrThrow({ where: { status: "PUBLISHED" } });
   const logCount = await db.prisma.adminAuditLog.count();
+  const publicationCount = await db.prisma.adminAuditLog.count({ where: { action: "RULE_VERSION_PUBLISHED" } });
   await publishRules(db.prisma, active.id, admin.id);
   assert.equal(await db.prisma.adminAuditLog.count(), logCount);
   const empty = await db.prisma.ruleVersion.create({ data: { name: "empty", createdById: admin.id } });
@@ -124,7 +125,11 @@ test("concurrent publishers leave one active version; failed publication rolls b
   await db.prisma.interpretationRule.updateMany({ where: { ruleVersionId: broken.id }, data: { generalText: "{unknown} 변수" } });
   await assert.rejects(publishRules(db.prisma, broken.id, admin.id), { code: "INVALID_RULE_INPUT" });
   assert.equal((await db.prisma.ruleVersion.findFirstOrThrow({ where: { status: "PUBLISHED" } })).id, active.id);
-  assert.equal(await db.prisma.adminAuditLog.count(), logCount);
+  assert.equal(await db.prisma.adminAuditLog.count({ where: { action: "RULE_VERSION_PUBLISHED" } }), publicationCount);
+  // Failed attempts are audited separately; they must not create successful publication records.
+  assert.equal(await db.prisma.adminAuditLog.count({ where: {
+    action: "RULE_VERSION_PUBLISH_FAILED", targetId: { in: [empty.id, "missing", broken.id] }
+  } }), 3);
   assert.equal((await db.prisma.ruleVersion.findUniqueOrThrow({ where: { id: broken.id } })).status, "DRAFT");
 });
 
@@ -148,7 +153,10 @@ test("admin writes persist star fields, protect published snapshots and roll bac
 
 test("legacy migration preserves data, maps default scope, and archives duplicate publications", async t => {
   const db = testDatabase(true); t.after(() => db.cleanup());
-  const admin = await db.prisma.user.create({ data: { email: "legacy@astune.local" } });
+  // Build the historical row using its historical columns, independent of today's generated client.
+  const admin = { id: "legacy-admin" };
+  await db.prisma.$executeRaw`INSERT INTO "User" ("id", "email", "updatedAt")
+    VALUES (${admin.id}, 'legacy@astune.local', CURRENT_TIMESTAMP)`;
   for (const [id, date] of [["older", "2026-01-01"], ["newer", "2026-02-01"]]) {
     await db.prisma.ruleVersion.create({ data: { id, name: id, status: "PUBLISHED", publishedAt: new Date(date), createdById: admin.id } });
   }

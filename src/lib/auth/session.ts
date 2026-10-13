@@ -1,65 +1,44 @@
 import type { NextRequest } from "next/server";
 import { AppError } from "@/lib/errors/app-error";
-import { env } from "@/lib/config/env";
+import { prisma } from "@/lib/db/prisma";
+import { getAuth, googleAuthConfigured } from "./server";
 
-export type RequestSession = {
-  userId: string | null;
-  email: string | null;
-  role: "USER" | "ADMIN" | null;
-};
+export type RequestSession = { userId: string; email: string; role: "USER" | "ADMIN" };
 
-export function getRequestSession(request: NextRequest): RequestSession {
-  if (process.env.NODE_ENV === "production" || process.env.ASTUNE_ALLOW_DEV_AUTH !== "1") {
-    return { userId: null, email: null, role: null };
+export async function getRequestSession(request: NextRequest): Promise<RequestSession | null> {
+  let userId: string | undefined;
+  if (googleAuthConfigured()) {
+    const session = await getAuth().api.getSession({ headers: request.headers });
+    userId = session?.user.id;
   }
-  const userId = request.headers.get("x-user-id");
-  const email = request.headers.get("x-user-email");
-  const headerRole = request.headers.get("x-user-role");
-
-  const role =
-    headerRole === "ADMIN" ||
-    (email && email.toLowerCase() === env.adminBootstrapEmail.toLowerCase())
-      ? "ADMIN"
-      : userId || email
-        ? "USER"
-        : null;
-
-  return {
-    userId,
-    email,
-    role
-  };
+  if (!userId && process.env.NODE_ENV !== "production" && process.env.ASTUNE_ALLOW_DEV_AUTH === "1") {
+    userId = request.headers.get("x-user-id") || undefined;
+  }
+  if (!userId) return null;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, role: true } });
+  return user ? { userId: user.id, email: user.email, role: user.role } : null;
 }
 
-export function requireUser(request: NextRequest): RequestSession & { userId: string } {
-  const session = getRequestSession(request);
-
-  if (!session.userId) {
-    throw new AppError("로그인이 필요합니다.", {
-      statusCode: 401,
-      code: "AUTH_REQUIRED"
-    });
+export function requireSameOrigin(request: NextRequest) {
+  const origin = request.headers.get("origin");
+  const allowedOrigin = new URL(process.env.BETTER_AUTH_URL || request.url).origin;
+  if (request.headers.get("sec-fetch-site") === "cross-site" || (origin && origin !== allowedOrigin)) {
+    throw new AppError("허용되지 않은 요청입니다.", { statusCode: 403, code: "ORIGIN_NOT_ALLOWED" });
   }
-
-  return { ...session, userId: session.userId };
+  if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
+    throw new AppError("JSON 형식으로 요청해 주세요.", { statusCode: 415, code: "JSON_REQUIRED" });
+  }
 }
 
-export function requireAdmin(request: NextRequest): RequestSession & { userId: string; role: "ADMIN" } {
-  const session = getRequestSession(request);
+export async function requireUser(request: NextRequest): Promise<RequestSession> {
+  const session = await getRequestSession(request);
+  if (!session) throw new AppError("로그인이 필요합니다.", { statusCode: 401, code: "AUTH_REQUIRED" });
+  if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) requireSameOrigin(request);
+  return session;
+}
 
-  if (session.role !== "ADMIN") {
-    throw new AppError("관리자 권한이 필요합니다.", {
-      statusCode: 403,
-      code: "ADMIN_REQUIRED"
-    });
-  }
-
-  if (!session.userId) {
-    throw new AppError("개발용 관리자 헤더 x-user-id가 필요합니다.", {
-      statusCode: 401,
-      code: "ADMIN_USER_ID_REQUIRED"
-    });
-  }
-
-  return { ...session, userId: session.userId, role: "ADMIN" };
+export async function requireAdmin(request: NextRequest): Promise<RequestSession & { role: "ADMIN" }> {
+  const session = await requireUser(request);
+  if (session.role !== "ADMIN") throw new AppError("관리자 권한이 필요합니다.", { statusCode: 403, code: "ADMIN_REQUIRED" });
+  return { ...session, role: "ADMIN" };
 }

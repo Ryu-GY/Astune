@@ -6,6 +6,6 @@ import { handleApiRequest, ok } from "@/lib/utils/http";
 export async function GET(request: NextRequest) {
   return handleApiRequest(request, async () => {
     const session = await requireUser(request);
-    return ok(await getMyReadings({ userId: session.userId! }));
+    return ok(await getMyReadings(session, Object.fromEntries(request.nextUrl.searchParams)));
   });
 }

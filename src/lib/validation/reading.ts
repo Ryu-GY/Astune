@@ -48,3 +48,9 @@ export const createReadingSchema = readingFields.extend({
 
 export type PreviewReadingInputSchema = z.infer<typeof previewReadingInputSchema>;
 export type CreateReadingSchema = z.infer<typeof createReadingSchema>;
+
+export const reuseBirthProfileSchema = z.object({ birthProfileId: z.string().trim().min(1).max(128) }).strict();
+export const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).max(100000).default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(12),
+});

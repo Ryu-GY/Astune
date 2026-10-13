@@ -19,7 +19,9 @@
     "backend:check": "uv run --directory astune-backend python -m app.astro.check_data",
     "benchmark:preview": "node scripts/benchmark-preview.mjs",
     "test:api": "node scripts/check-api-contract.mjs",
-    "db:migrate": "node --env-file=.env scripts/prepare-sqlite.mjs && prisma migrate deploy"
+    "db:migrate": "node --env-file=.env scripts/prepare-sqlite.mjs && prisma migrate deploy",
+    "test:integration": "node --import tsx --test tests/storage-permissions.integration.test.ts",
+    "verify": "node scripts/verify-tests.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -28,7 +30,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "zod": "^3.25.0",
-    "leaflet": "1.9.4"
+    "leaflet": "1.9.4",
+    "better-auth": "^1.7.7"
   },
   "devDependencies": {
     "@types/luxon": "^3.7.0",

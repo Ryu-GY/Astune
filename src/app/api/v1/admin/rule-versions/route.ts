@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const session = await requireAdmin(request);
     const body = (await readJsonBody(request)) as { name?: string; description?: string };
 
-    if (!body.name?.trim()) {
+    if (typeof body?.name !== "string" || !body.name.trim()) {
       throw new AppError("name은 필수입니다.", {
         statusCode: 400,
         code: "INVALID_RULE_VERSION_NAME"
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     return ok(
       await createRuleVersion({
         name: body.name.trim(),
-        description: body.description?.trim(),
+        description: body.description,
         createdById: session.userId
       }),
       201

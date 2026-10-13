@@ -2,10 +2,11 @@ import { Prisma, type PrismaClient } from "@prisma/client";
 import { AppError } from "@/lib/errors/app-error";
 import { interpretationRuleInputSchema } from "@/lib/validation/rule";
 import { fromPrismaRule } from "@/lib/readings/repositories/prisma-rule-mapper";
+import { auditFailure, lockRuleWrites } from "./admin-audit";
 
 export async function publishInTransaction(tx: Prisma.TransactionClient, ruleVersionId: string, adminUserId: string) {
-  // A write comes first so concurrent SQLite publishers serialize before reading.
-  // The partial unique index remains the last line of defense for every DB writer.
+  await lockRuleWrites(tx);
+  const previous = await tx.ruleVersion.findMany({ where: { status: "PUBLISHED", id: { not: ruleVersionId } } });
   await tx.ruleVersion.updateMany({
     where: { status: "PUBLISHED", id: { not: ruleVersionId } },
     data: { status: "ARCHIVED" }
@@ -31,7 +32,8 @@ export async function publishInTransaction(tx: Prisma.TransactionClient, ruleVer
     await tx.ruleVersion.update({ where: { id: ruleVersionId }, data: { status: "PUBLISHED", publishedAt } });
     await tx.adminAuditLog.create({ data: {
       adminUserId, action: "RULE_VERSION_PUBLISHED", targetType: "rule_version", targetId: ruleVersionId,
-      payloadJson: JSON.stringify({ publishedAt: publishedAt.toISOString() })
+      payloadJson: JSON.stringify({ outcome: "SUCCESS", before: { version, previouslyPublished: previous },
+        after: { version: { ...version, status: "PUBLISHED", publishedAt }, archivedVersionIds: previous.map(item => item.id) } })
     } });
   }
   return { ok: true, ruleVersionId, status: "PUBLISHED" as const };
@@ -43,6 +45,7 @@ export async function publishRules(prisma: PrismaClient, ruleVersionId: string, 
       maxWait: 10000, timeout: 15000
     });
   } catch (error) {
+    await auditFailure(prisma, adminUserId, "RULE_VERSION_PUBLISH", "rule_version", ruleVersionId, error);
     if (error instanceof Prisma.PrismaClientKnownRequestError && ["P1008", "P2002", "P2034"].includes(error.code)) {
       throw new AppError("다른 규칙 게시 작업과 충돌했습니다. 현재 게시 버전을 확인한 뒤 다시 시도해 주세요.", {
         statusCode: 409, code: "RULE_PUBLISH_CONFLICT"

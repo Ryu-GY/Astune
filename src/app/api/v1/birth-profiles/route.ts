@@ -1,7 +1,7 @@
 import { readJsonBody } from "@/lib/utils/request-body";
 import { NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth/session";
-import { createBirthProfile } from "@/server/services/reading-service";
+import { createBirthProfile, getMyBirthProfiles } from "@/server/services/reading-service";
 import { handleApiRequest, ok } from "@/lib/utils/http";
 
 export async function POST(request: NextRequest) {
@@ -10,4 +10,10 @@ export async function POST(request: NextRequest) {
     const body = await readJsonBody(request);
     return ok(await createBirthProfile(body, { userId: session.userId! }), 201);
   });
+}
+
+export async function GET(request: NextRequest) {
+  return handleApiRequest(request, async () => ok(await getMyBirthProfiles(
+    await requireUser(request), Object.fromEntries(request.nextUrl.searchParams)
+  )));
 }

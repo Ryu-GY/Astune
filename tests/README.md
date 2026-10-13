@@ -1,5 +1,40 @@
 # Astune 테스트
 
+## T701·T702 재현
+
+Node.js 24, Python 3.11, uv 0.11.6을 기준으로 확인했습니다. 새 체크아웃에서는 잠금 파일대로 설치하고 로컬 천체력을 한 번 준비합니다.
+
+```powershell
+npm ci
+uv sync --locked --project astune-backend --python 3.11
+uv run --locked --directory astune-backend python -m app.astro.prepare_data
+npm run verify
+```
+
+`verify`는 Prisma 클라이언트 생성 → 천체력 사전 검사 → TypeScript 전체 테스트 → Python 전체 테스트 → 타입 검사를 순서대로 실행하며 첫 실패에서 중단합니다. 개발 서버, Google 계정·OAuth 키, 외부 DB는 필요하지 않습니다. SQLite 테스트 DB와 합성 세션은 임시 폴더에서 만들고 정리하며 개발 DB를 마이그레이션하거나 seed하지 않습니다. TypeScript 통합 테스트에서 Python 응답만 고정하며 인증·세션 서명·소유권·DB 트랜잭션·규칙 적용은 실제 구현을 사용합니다. 실제 Skyfield 계산은 Python 테스트가 담당합니다.
+
+```powershell
+# 저장·권한 통합 시나리오만 다시 실행
+npm run db:generate
+npm run test:integration
+```
+
+천체력이 없으면 `verify`는 계산 검사를 건너뛰지 않고 사전 검사에서 실패합니다. Hipparcos 원본 파일 전체 재생성 비교 1개는 원본 `hip_main.dat`이 있을 때만 실행하는 선택 검사입니다. 필요하면 `npm run backend:catalog -- --download`로 준비합니다. CI는 저장소에 포함된 성표의 무결성과 실제 계산을 검사하고 이 선택 검사의 생략 여부를 출력합니다.
+
+`.github/workflows/tests.yml`은 main/develop push와 PR에서 같은 검증 및 프로덕션 빌드를 실행합니다. 공식 [checkout](https://github.com/actions/checkout), [setup-node](https://github.com/actions/setup-node), [setup-uv](https://github.com/astral-sh/setup-uv)의 커밋을 고정했으며 배포나 저장소 쓰기 권한은 사용하지 않습니다. 로컬 검증 결과와 CI 서비스에서 실제 실행된 결과는 구분합니다.
+
+`storage-permissions.integration.test.ts`의 범위:
+
+- 공개 위치·preview 응답과 DB 저장 없음
+- 보호된 저장·목록·상세·출생 프로필·관리자 경로의 비로그인 차단
+- 개발용 헤더 위조, 잘못된 서명, 만료·폐기·로그아웃 세션 차단
+- 소유자 저장·복원·프로필 재사용·페이지 분할, 타인과 관리자에게 개인 리딩 비공개
+- 잘못된 입력·교차 출처·JSON 외 요청·계산 실패의 오류와 부분 저장 방지
+- 시간 모름 표시 보존, DB 관리자 권한 변경 즉시 반영
+- 잘못된 관리자 입력의 400 처리, 초안→게시 전환, 단일 게시 버전, 감사 기록, 게시 후 기존 리딩 보존
+
+## 개별 검사
+
 프로젝트 루트에서 실행합니다.
 
 ```powershell

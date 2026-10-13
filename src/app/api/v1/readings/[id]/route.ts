@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getReadingById } from "@/server/services/reading-service";
+import { requireUser } from "@/lib/auth/session";
 import { handleApiRequest, ok } from "@/lib/utils/http";
 
 export async function GET(
@@ -8,6 +9,6 @@ export async function GET(
 ) {
   return handleApiRequest(request, async () => {
     const { id } = await context.params;
-    return ok(await getReadingById(id));
+    return ok(await getReadingById(id, await requireUser(request)));
   });
 }
