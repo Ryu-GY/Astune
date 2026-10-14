@@ -4,7 +4,7 @@ import { createHmac, randomBytes, randomUUID } from "node:crypto";
 import { NextRequest } from "next/server";
 import { testDatabase } from "./helpers/database";
 
-const origin = "http://localhost:3471";
+const origin = "https://astune.example.test";
 const input = { birthAtLocal: "1995-05-05T15:00:00", timezone: "Asia/Seoul", locationName: "Seoul",
   latitude: 37.5665, longitude: 126.978, maxMagnitude: 2 };
 const astronomy = { selected_star: { id: 24608, display_name: "Capella", magnitude: 0.08 },
@@ -31,6 +31,15 @@ test("T702: authenticated storage, ownership and rule publication through public
   const { getAuth } = await import("../src/lib/auth/server");
   const auth = getAuth();
   const cookieName = (await auth.$context).authCookies.sessionToken.name;
+  await t.test("production session cookies and the shared auth instance retain the intended security policy", async () => {
+    assert.equal(getAuth(), auth);
+    const cookie = (await auth.$context).authCookies.sessionToken;
+    assert(cookie.name.startsWith("__Secure-"));
+    assert.equal(cookie.attributes.secure, true);
+    assert.equal(cookie.attributes.httpOnly, true);
+    assert.equal(cookie.attributes.sameSite, "lax");
+    assert.equal(cookie.attributes.domain, undefined);
+  });
   // Seed synthetic sessions, then exercise the real Better Auth signature and DB lookup.
   // No provider login, mocked requireUser, or development-header authentication is used.
   async function session(userId: string, expiresAt = new Date(Date.now() + 3600_000)) {
@@ -192,10 +201,13 @@ test("T702: authenticated storage, ownership and rule publication through public
     await response(readings.POST(request("readings", "POST", { ...input, timezone: "invalid/timezone" }, aliceSession.cookie)), 422, "TIMEZONE_NOT_FOUND");
     await response(list.GET(request("me/readings?page=0", "GET", undefined, aliceSession.cookie)), 400, "VALIDATION_ERROR");
     await response(profiles.GET(request("birth-profiles?pageSize=51", "GET", undefined, aliceSession.cookie)), 400, "VALIDATION_ERROR");
-    const crossOriginHeaders: Record<string, string>[] = [{ origin: "https://untrusted.example" }, { "sec-fetch-site": "cross-site" }];
+    const crossOriginHeaders: Record<string, string>[] = [{ origin: "https://untrusted.example" }, { "sec-fetch-site": "cross-site" }, { origin: "null" }, { origin: "" }];
     for (const headers of crossOriginHeaders) {
       await response(readings.POST(request("readings", "POST", input, aliceSession.cookie, headers)), 403, "ORIGIN_NOT_ALLOWED");
     }
+    const noSource = request("readings", "POST", input, aliceSession.cookie);
+    noSource.headers.delete("origin");
+    await response(readings.POST(noSource), 403, "ORIGIN_NOT_ALLOWED");
     await response(readings.POST(request("readings", "POST", input, aliceSession.cookie, { "content-type": "text/plain" })), 415, "JSON_REQUIRED");
     upstreamUnavailable = true;
     try { await response(readings.POST(request("readings", "POST", { ...input, saveBirthProfile: true }, aliceSession.cookie)), 503, "ASTRO_SERVICE_UNAVAILABLE"); }

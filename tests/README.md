@@ -35,6 +35,10 @@ npm run test:integration
 
 ## 개별 검사
 
+인증·설정 보강(2026-10-14): `environment.test.ts`는 SQLite/PostgreSQL URL, OAuth 설정 누락·오류, 비밀값 비노출, 개발용 인증 제한, 천문 서버 URL·시간 제한과 규칙 소스를 검증합니다. `request-security.test.ts`는 Origin/Referer, 불투명·누락 출처, 다른 도메인·포트와 JSON 요구사항을 확인합니다. 저장 통합 테스트는 HTTPS 세션 쿠키의 Secure/HttpOnly/SameSite와 단일 인증 인스턴스도 검사합니다.
+
+`npm audit --audit-level=high`와 Gitleaks 검사는 `.github/workflows/security.yml`에서 push/PR마다 실행됩니다. 배포 작업은 포함하지 않습니다. Prisma 6의 `@prisma/config`에 한정한 `deepmerge-ts@8.0.2` override는 GHSA-ggr8-5vv4-36mx 대응이며, Prisma에서 수정 의존성을 채택하면 제거할 수 있습니다.
+
 프로젝트 루트에서 실행합니다.
 
 ```powershell

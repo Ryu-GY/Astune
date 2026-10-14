@@ -31,11 +31,11 @@ async function calculate(input: PreviewReadingInput, fetcher: typeof fetch): Pro
   astro: AstroResult; astronomyMeta: AstronomyMeta;
 }> {
   const [birthDate, birthTime] = input.birthAtLocal.split("T");
-  const origin = process.env.ASTUNE_ASTRO_API_URL || "http://127.0.0.1:8000";
+  const { origin, ...transport } = astronomyTransport(30000);
   let response: Response;
   try {
     response = await fetcher(new URL("/api/v1/readings/preview", origin), {
-      method: "POST", cache: "no-store", ...astronomyTransport(30000),
+      method: "POST", cache: "no-store", ...transport,
       body: JSON.stringify({
         birth_date: birthDate, birth_time_local: birthTime, timezone: input.timezone,
         location_name: input.locationName || "Coordinates", latitude: input.latitude,

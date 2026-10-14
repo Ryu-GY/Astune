@@ -1,8 +1,9 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { AppError } from "@/lib/errors/app-error";
+import { getDatabaseConfig } from "@/lib/config/env";
 
 export async function lockRuleWrites(tx: Prisma.TransactionClient) {
-  if (process.env.DATABASE_URL?.startsWith("postgres")) {
+  if (getDatabaseConfig().provider === "postgresql") {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(414535, 1)`;
   } else {
     // Even a zero-row UPDATE obtains SQLite's write reservation before reads.

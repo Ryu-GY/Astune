@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth/client";
 import { apiClient, ApiClientError, postJson } from "@/lib/utils/api-client";
 import { SavedBirthProfilePicker } from "@/components/forms/SavedBirthProfilePicker";
 import { Icon } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/Button";
 import type { BirthProfile } from "@/types/birth-profile";
 import type { DailyHoroscope } from "@/types/horoscope";
 import styles from "./DailyHoroscopeView.module.css";
@@ -108,7 +109,7 @@ function HoroscopeExperience({ signedIn }: { signedIn: boolean }) {
         <form onSubmit={submit} aria-busy={loading}>
           <label className="label" htmlFor="horoscope-birth-date">생년월일 <span className="optional">양력</span></label>
           <input id="horoscope-birth-date" className="input" type="date" required max={today || undefined} value={birthDate} onChange={event => editDate(event.target.value)} />
-          <button className={`button ${styles.submit}`} type="submit" disabled={loading || !birthDate}>{loading ? "오늘의 운세를 읽는 중…" : "오늘의 운세 보기"}<Icon name="arrow" /></button>
+          <Button className={styles.submit} type="submit" busy={loading} disabled={!birthDate}>{loading ? "오늘의 운세를 읽는 중…" : "오늘의 운세 보기"}<Icon name="arrow" /></Button>
         </form>
         {!signedIn ? <p className={styles.profileNote}><Link href="/login?next=/horoscope">로그인</Link>하면 내 정보에 저장한 생년월일을 바로 사용할 수 있어요.</p> : null}
         {error ? <p className="error" role="alert">{error}</p> : null}

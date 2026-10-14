@@ -4,6 +4,7 @@ import { CitySearch, type BirthLocation } from "@/components/forms/CitySearch";
 import { apiClient, postJson } from "@/lib/utils/api-client";
 import type { BirthProfile } from "@/types/birth-profile";
 import { DEFAULT_READING_MAX_MAGNITUDE } from "@/lib/readings/coverage";
+import { Button } from "@/components/ui/Button";
 
 export function BirthProfileForm({ onSaved }: { onSaved: (profile: BirthProfile) => void }) {
   const [label, setLabel] = useState("나의 출생 정보");
@@ -47,7 +48,7 @@ export function BirthProfileForm({ onSaved }: { onSaved: (profile: BirthProfile)
         <select id="profile-fold" className="select" value={fold} onChange={e => setFold(e.target.value)}><option value="">해당 없음 / 확인 필요</option><option value="0">첫 번째 시각</option><option value="1">두 번째 시각</option></select>
       </div></details>
       <p className="help">출생지의 현지 시각을 입력해 주세요. 저장한 정보는 본인 계정에서만 사용할 수 있어요.</p>
-      <button className="button" type="submit">{saving ? "저장하는 중…" : "출생 정보 저장하기"}</button>
+      <Button type="submit" busy={saving}>{saving ? "저장하는 중…" : "출생 정보 저장하기"}</Button>
     </fieldset>
     {error ? <p className="error" role="alert">{error}</p> : null}
   </form>;

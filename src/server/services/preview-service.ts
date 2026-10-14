@@ -9,6 +9,7 @@ import type { RuleRepository } from "@/lib/readings/repositories/rule-repository
 import type { ReadingPreviewResponse } from "@/types/reading";
 import { birthTimeNotice, referenceTimeWording } from "@/lib/readings/birth-time";
 import { traceStage } from "@/lib/utils/request-context";
+import { getRuleSource } from "@/lib/config/env";
 
 const builtinRepository = new InMemoryRuleRepository(DEFAULT_RULE_VERSION, DEFAULT_INTERPRETATION_RULES);
 
@@ -30,7 +31,7 @@ export async function previewReading(input: unknown, dependencies: {
   const parsed = await traceStage("validation", () => normalizePreviewInput(input));
   const { astro, astronomyMeta } = await (dependencies.calculate || requestRepresentativeStar)(parsed);
   let repository = dependencies.repository || builtinRepository;
-  if (!dependencies.repository && process.env.ASTUNE_RULE_SOURCE === "database") {
+  if (!dependencies.repository && getRuleSource() === "database") {
     const { prisma } = await import("@/lib/db/prisma");
     repository = new PrismaRuleRepository(prisma);
   }

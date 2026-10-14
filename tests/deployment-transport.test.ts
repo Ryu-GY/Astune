@@ -23,6 +23,6 @@ test("deployment credentials reach only the upstream and auth failures become se
   await assert.rejects(requestRepresentativeStar({birthAtLocal:"1995-05-05T15:00:00",timezone:"Asia/Seoul",latitude:37.5665,longitude:126.978}, reject), {code:"ASTRO_SERVICE_UNAVAILABLE",statusCode:503});
   assert.deepEqual(timeouts, [120000,120000]);
   process.env.ASTUNE_ASTRO_TIMEOUT_MS = "9999999";
-  await assert.rejects(requestLocations({query:"Seoul",limit:5,allowExternal:false}, reject));
-  assert.equal(timeouts.at(-1),15000);
+  await assert.rejects(requestLocations({query:"Seoul",limit:5,allowExternal:false}, reject), { name: "EnvironmentConfigurationError" });
+  assert.deepEqual(timeouts, [120000,120000], "Invalid configuration must fail before creating an upstream request");
 });

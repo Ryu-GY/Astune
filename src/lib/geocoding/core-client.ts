@@ -25,10 +25,11 @@ export function requestLocations(input: ResolveLocationBody, fetcher: typeof fet
 }
 
 async function resolveLocations(input: ResolveLocationBody, fetcher: typeof fetch) {
+  const { origin, ...transport } = astronomyTransport(15000);
   let response: Response;
   try {
-    response = await fetcher(new URL("/api/v1/locations/resolve", process.env.ASTUNE_ASTRO_API_URL || "http://127.0.0.1:8000"), {
-      method: "POST", cache: "no-store", ...astronomyTransport(15000),
+    response = await fetcher(new URL("/api/v1/locations/resolve", origin), {
+      method: "POST", cache: "no-store", ...transport,
       body: JSON.stringify({query: input.query, country_code: input.countryCode, limit: input.limit,
         latitude: input.latitude, longitude: input.longitude, timezone: input.timezone,
         allow_external: input.allowExternal}),
